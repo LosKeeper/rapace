@@ -19,19 +19,19 @@ for i in range(node_number):
     if node_type in availables_equipment:
         if node_type == 'firewall':
             net.addP4Switch(node_name)
-            net.setP4Source(node_name, 'firewall.p4')
+            net.setP4Source(node_name, 'equipment/firewall.p4')
             
         elif node_type == 'router-controller':
             net.addP4Switch(node_name)
-            net.setP4Source(node_name, 'router-controller.p4')
+            net.setP4Source(node_name, 'equipment/router-controller.p4')
             
         elif node_type == 'router-lw-controller':
             net.addP4Switch(node_name)
-            net.setP4Source(node_name, 'router-lw-controller.p4')
+            net.setP4Source(node_name, 'equipment/router-lw-controller.p4')
             
         elif node_type == 'load-balancer':
             net.addP4Switch(node_name)
-            net.setP4Source(node_name, 'load-balancer.p4')
+            net.setP4Source(node_name, 'equipment/load-balancer.p4')
             
         elif node_type == 'host':
             net.addHost(node_name)
