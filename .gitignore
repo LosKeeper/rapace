@@ -1,1 +1,5 @@
 .vscode
+equipment/*.p4i
+equipment/*.txt
+log/
+pcap/

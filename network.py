@@ -1,4 +1,5 @@
 from p4utils.mininetlib.network_API import NetworkAPI
+import yaml
 
 net = NetworkAPI()
 
@@ -7,51 +8,43 @@ net.setLogLevel('info')
 net.setCompiler(p4rt=True)
 net.execScript('python controller.py', reboot=True)
 
+# Load network configuration from YAML file
+config_file = "topology.yaml"
+with open(config_file, 'r') as file:
+    config_data = yaml.safe_load(file)
+
 # Network definition
-availables_equipment = ['firewall', 'router-controller','touter-lw-controller', 'load-balancer', 'host']
+available_equipment = ['firewall', 'router-controller', 'router-lw-controller', 'load-balancer', 'host']
 
-# Ask for the equipement running on each node
-node_number = int(input("Nombre de noeuds: "))
+for node_config in config_data.get('nodes', []):
+    node_name = node_config.get('name')
+    node_type = node_config.get('type')
 
-for i in range(node_number):
-    node_name = input("Nom du noeud: ")
-    node_type = input("Type du noeud: (firewall, router-controller, router-lw-controller, load-balancer, host)")
-    if node_type in availables_equipment:
+    print(node_name)
+
+    if node_type in available_equipment:
         if node_type == 'firewall':
             net.addP4Switch(node_name)
-            net.setP4Source(node_name, 'equipment/firewall.p4')
-            
-        elif node_type == 'router-controller':
+            net.setP4Source(node_name, f'equipment/{node_type}.p4')
+        elif node_type in ['router-controller', 'router-lw-controller', 'load-balancer']:
             net.addP4Switch(node_name)
-            net.setP4Source(node_name, 'equipment/router-controller.p4')
-            
-        elif node_type == 'router-lw-controller':
-            net.addP4Switch(node_name)
-            net.setP4Source(node_name, 'equipment/router-lw-controller.p4')
-            
-        elif node_type == 'load-balancer':
-            net.addP4Switch(node_name)
-            net.setP4Source(node_name, 'equipment/load-balancer.p4')
-            
+            net.setP4Source(node_name, f'equipment/{node_type}.p4')
         elif node_type == 'host':
             net.addHost(node_name)
-            
     else:
-        print("Type de noeud invalide")
+        print(f"Invalid type for node : {node_type}")
         exit(1)
 
-# Ask for the links between the nodes
-link_number = int(input("Nombre de liens: "))
+for link_config in config_data.get('links', []):
+    source = link_config.get('source')
+    print(source)
+    target = link_config.get('target')
+    print(target)
+    net.addLink(source, target)
 
-for i in range(link_number):
-    node1 = input("Nom du premier noeud: ")
-    node2 = input("Nom du deuxième noeud: ")
-    net.addLink(node1, node2) #TODO: User port for each link
-    
-    
-#Assignment strategy
-net.l3()   
-    
+# Assignment strategy
+net.l3()
+
 # Node general options
 net.enablePcapDumpAll()
 net.enableLogAll()

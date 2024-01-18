@@ -1,0 +1,45 @@
+nodes:
+  - name: s0
+    type: firewall
+  - name: s1
+    type: load-balancer
+  - name: s2
+    type: router-controller
+  - name: s3
+    type: router-controller
+  - name: s4
+    type: router-lw-controller
+  - name: s5
+    type: router-lw-controller
+  - name: s6
+    type: router-lw-controller
+  - name: s7
+    type: router-controller
+
+links:
+  - source: s0
+    target: s1
+  - source: s1
+    target: s2
+  - source: s1
+    target: s3
+  - source: s2
+    target: s3
+  - source: s2
+    target: s4
+  - source: s2
+    target: s5
+  - source: s3
+    target: s4
+  - source: s3
+    target: s6
+  - source: s4
+    target: s5
+  - source: s4
+    target: s6
+  - source: s5
+    target: s6
+  - source: s5
+    target: s7
+  - source: s6
+    target: s7
