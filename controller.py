@@ -2,20 +2,19 @@ from p4utils.utils.helper import load_topo
 from p4utils.utils.sswitch_p4runtime_API import SimpleSwitchP4RuntimeAPI
 from p4utils.utils.sswitch_thrift_API import SimpleSwitchThriftAPI
 from p4utils.utils.topology import NetworkGraph 
+from p4utils.utils.p4runtime_API.api import TableEntry
+from p4utils.utils.compiler import P4C
+import yaml
+from typing import List 
 
-topo = load_topo('topology.json')
+topology = load_topo('topology.json')
 controllers = {}
 
-for switch, data in topo.get_p4rtswitches().items():
-    controllers[switch] = SimpleSwitchP4RuntimeAPI(data['device_id'], data['grpc_port'],
-                                                   p4rt_path=data['p4rt_path'],
-                                                   json_path=data['json_path'])
-
 class P4Switch:
-    def __init__(self, name: str, topo: NetworkGraph) -> None:
+    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
         self.name = name
-        self.topo = topo
-        self.api = SimpleSwitchThriftAPI(self.topo.get_thrift_port(name))
+        self.topology = topology
+        self.api = SimpleSwitchThriftAPI(self.topology.get_thrift_port(name))
         
     def compile(self, p4_src: str):
         source = P4C(p4_src, "/usr/local/bin/p4c")
@@ -44,13 +43,11 @@ class P4Switch:
     def remove_link(self, neighboor: str):
         # To be overridden
         pass
-    
-    
-from p4utils.utils.p4runtime_lib import TableEntry
+
 
 class Firewall(P4Switch):
-    def __init__(self, name: str, topo: NetworkGraph) -> None:
-        super().__init__(name, topo)
+    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
+        super().__init__(name, neighbors, inflow, topology)
         """Add specific attributes for firewall"""
         self.rules = []  # List to store firewall rules
 
@@ -73,25 +70,13 @@ class Firewall(P4Switch):
 
     
 class LoadBalancer(P4Switch):
-    def __init__(self, name: str, topo: NetworkGraph) -> None:
-        super().__init__(name, topo)
-        self.in_port = self.determine_in_port()
-        self.out_ports = []  # List to store dynamically determined out ports
+    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
+        super().__init__(name, neighbors, inflow, topology)
+        self.in_port = inflow
+        self.out_ports = neighbors 
         self.rate_limit = 1  # Default rate limit, can be adjusted
         self.init_out_ports()
     
-    def determine_in_port(self):
-        """Determine the in port dynamically based on the topology"""
-        for link in self.topo.links:
-            if link['target'] == self.name:
-                return link['source']
-        return None  # In port not found
-    
-    def init_out_ports(self):
-        """Determine the out ports dynamically based on the topology"""
-        for link in self.topo.links:
-            if link['source'] == self.name:
-                self.out_ports.append(link['target'])
     
     def init_table(self):
         """Implement load balancer table initialization"""
@@ -119,19 +104,60 @@ class LoadBalancer(P4Switch):
     
     
 class RouterController(P4Switch):
-    def __init__(self, name: str, topo: NetworkGraph) -> None:
-        super().__init__(name, topo)
+    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
+        super().__init__(name, neighbors, inflow, topology)
         # Add specific attributes for router controller
     
     def init_table(self):
         # Implement router controller table initialization
+        pass
 
     
 class RouterLWController(P4Switch):
-    def __init__(self, name: str, topo: NetworkGraph) -> None:
-        super().__init__(name, topo)
+    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
+        super().__init__(name, neighbors, inflow, topology)
         # Add specific attributes for lightweight router controller
     
     def init_table(self):
         # Implement lightweight router controller table initialization
+        pass
 
+### Network topology parsing and creation
+
+config_file = "topology.yaml"
+with open(config_file, 'r') as file:
+    config_data = yaml.safe_load(file)
+    
+for node_config in config_data.get('nodes', []):
+    node_name = node_config.get('name')
+    node_type = node_config.get('type')
+    node_neighbors = node_config.get('neighbors')
+    node_inflow = node_config.get('inflow')
+
+    if node_type == 'firewall':
+        fw_node = Firewall(node_name, node_neighbors, node_inflow, topology)
+        fw_node.compile('equipment/firewall.p4')
+        fw_node.flash('topology.json')
+        controllers[node_name] = fw_node
+        
+    elif node_type == 'load-balancer':
+        lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, topology)
+        lb_node.compile('equipment/loadbalancer.p4')
+        lb_node.flash('topology.json')
+        controllers[node_name] = lb_node
+        
+    elif node_type == 'router':
+        router_node = RouterController(node_name, node_neighbors, node_inflow, topology)
+        router_node.compile('equipment/router.p4')
+        router_node.flash('topology.json')
+        controllers[node_name] = router_node
+        
+    elif node_type == 'lwrouter':
+        lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, topology)
+        lw_router_node.compile('equipment/router-lw.p4')
+        lw_router_node.flash('topology.json')
+        controllers[node_name] = lw_router_node
+
+    else:
+        print(f"Invalid type for node: {node_type}")
+        exit(1)
