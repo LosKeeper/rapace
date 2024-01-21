@@ -20,13 +20,8 @@ for node_config in config_data.get('nodes', []):
     node_name = node_config.get('name')
     node_type = node_config.get('type')
 
-    print(node_name)
-
     if node_type in available_equipment:
-        if node_type == 'firewall':
-            net.addP4Switch(node_name)
-            net.setP4Source(node_name, f'equipment/{node_type}.p4')
-        elif node_type in ['router-controller', 'router-lw-controller', 'load-balancer']:
+        if node_type in ['firewall', 'router-controller', 'router-lw-controller', 'load-balancer']:
             net.addP4Switch(node_name)
             net.setP4Source(node_name, f'equipment/{node_type}.p4')
         elif node_type == 'host':
@@ -37,9 +32,7 @@ for node_config in config_data.get('nodes', []):
 
 for link_config in config_data.get('links', []):
     source = link_config.get('source')
-    print(source)
     target = link_config.get('target')
-    print(target)
     net.addLink(source, target)
 
 # Assignment strategy
