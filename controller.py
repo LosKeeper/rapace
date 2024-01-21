@@ -17,10 +17,12 @@ class P4Switch:
         self.api = SimpleSwitchThriftAPI(self.topology.get_thrift_port(name))
         
     def compile(self, p4_src: str):
+        print('Compiling P4 source file...')
         source = P4C(p4_src, "/usr/local/bin/p4c")
         source.compile()
         
     def flash(self, json_src: str):
+        print('Loading and swaping JSON file...')
         self.api.load_new_config_file(json_src)
         self.api.swap_configs()
         
@@ -75,8 +77,6 @@ class LoadBalancer(P4Switch):
         self.in_port = inflow
         self.out_ports = neighbors 
         self.rate_limit = 1  # Default rate limit, can be adjusted
-        self.init_out_ports()
-    
     
     def init_table(self):
         """Implement load balancer table initialization"""
@@ -124,7 +124,7 @@ class RouterLWController(P4Switch):
 
 ### Network topology parsing and creation
 
-config_file = "topology.yaml"
+config_file = 'topology.yaml'
 with open(config_file, 'r') as file:
     config_data = yaml.safe_load(file)
     
@@ -134,28 +134,30 @@ for node_config in config_data.get('nodes', []):
     node_neighbors = node_config.get('neighbors')
     node_inflow = node_config.get('inflow')
 
+    print(f'Working on {node_name} switch:')
+
     if node_type == 'firewall':
         fw_node = Firewall(node_name, node_neighbors, node_inflow, topology)
         fw_node.compile('equipment/firewall.p4')
-        fw_node.flash('topology.json')
+        fw_node.flash('equipment/firewall.json')
         controllers[node_name] = fw_node
         
     elif node_type == 'load-balancer':
         lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, topology)
-        lb_node.compile('equipment/loadbalancer.p4')
-        lb_node.flash('topology.json')
+        lb_node.compile('equipment/load-balancer.p4')
+        lb_node.flash('equipment/load-balancer.json')
         controllers[node_name] = lb_node
         
     elif node_type == 'router':
         router_node = RouterController(node_name, node_neighbors, node_inflow, topology)
         router_node.compile('equipment/router.p4')
-        router_node.flash('topology.json')
+        router_node.flash('equipment/router.json')
         controllers[node_name] = router_node
         
-    elif node_type == 'lwrouter':
+    elif node_type == 'router-lw':
         lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, topology)
         lw_router_node.compile('equipment/router-lw.p4')
-        lw_router_node.flash('topology.json')
+        lw_router_node.flash('equipment/router-lw.json')
         controllers[node_name] = lw_router_node
 
     else:

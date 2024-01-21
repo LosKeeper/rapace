@@ -1,5 +1,4 @@
 from p4utils.mininetlib.network_API import NetworkAPI
-import yaml
 
 net = NetworkAPI()
 
@@ -7,12 +6,14 @@ net = NetworkAPI()
 net.setLogLevel('info')
 net.setCompiler(p4rt=True)
 
+NB = 8
+
 # Create N nodes
-for i in range(0, 10):
+for i in range(0, NB):
     net.addP4Switch(f's{i}')
     
-for i in range(0, 10):
-    for j in range(i, 10):
+for i in range(0, NB):
+    for j in range(i, NB):
         if i != j:
             net.addLink(f's{i}', f's{j}')
     

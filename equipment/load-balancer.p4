@@ -44,6 +44,6 @@ V1Switch(
     LbVerifyChecksum(),
     LbIngress(),
     LbEgress(),
-    AllDeparser(),
-    LbComputeChecksum()
+    LbComputeChecksum(),
+    AllDeparser()
 ) main;

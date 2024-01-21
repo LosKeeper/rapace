@@ -8,26 +8,26 @@ nodes:
     neighbors: s0 s2 s3
     inflow: s0
   - name: s2
-    type: router-controller
+    type: router 
     neighbors: s1 s3 s4 s5
     inflow: 
   - name: s3
-    type: router-controller
+    type: router 
     neighbors: s1 s2 s4 s6
     inflow: 
   - name: s4
-    type: router-lw-controller
+    type: router-lw 
     neighbors: s2 s3 s5 s6
     inflow: 
   - name: s5
-    type: router-lw-controller
+    type: router-lw 
     neighbors: s2 s4 s6 s7
     inflow: 
   - name: s6
-    type: router-lw-controller
+    type: router-lw 
     neighbors: s3 s4 s5 s7
     inflow: 
   - name: s7
-    type: router-controller
+    type: router 
     neighbors: s5 s6
     inflow: 
