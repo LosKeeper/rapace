@@ -15,7 +15,7 @@ control FwVerifyChecksum(inout headers hdr, inout metadata meta) {
 
 /********** Ingress control **********/
 control FwIngress(inout headers hdr,
-                  inout fw_metadata meta,
+                  inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
 
     bit<32> tmp;
@@ -70,7 +70,7 @@ control FwIngress(inout headers hdr,
 
 /********** Egress control **********/
 control FwEgress(inout headers hdr,
-                 inout fw_metadata meta,
+                 inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
     apply {
         
@@ -90,6 +90,6 @@ V1Switch(
     FwVerifyChecksum(),
     FwIngress(),
     FwEgress(),
-    AllDeparser(),
-    FwComputeChecksum()
+    FwComputeChecksum(),
+    AllDeparser()
 ) main;

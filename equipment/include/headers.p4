@@ -64,10 +64,6 @@ struct headers {
 }
 
 struct metadata {
-
-}
-
-struct fw_metadata {
     ipv4Addr_t srcAddr;
     ipv4Addr_t dstAddr;
     bit<8> protocol;
