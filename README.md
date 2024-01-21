@@ -15,3 +15,9 @@ cd patch
 ./patch.sh
 ```
 ## [Sujet](sujet.pdf)
+
+## Démarrage
+Pour démarrer le projet, il faut dans un premier rentre la topologie du réseau dans ``topology.yaml`` et éxecuter la commande :
+```bash
+python network.py 
+```

@@ -4,9 +4,12 @@ const bit<16> TYPE_IPV4 = 0x800;
 const bit<8>  TYPE_TCP  = 6;
 const bit<8>  TYPE_UDP  = 17;
 
+typedef bit<48> macAddr_t;
+typedef bit<32> ipv4Addr_t;
+
 header ethernet_t {
-    bit<48> dstAddr;
-    bit<48> srcAddr;
+    macAddr_t srcAddr;
+    macAddr_t dstAddr;
     bit<16> etherType;
 }
 
@@ -22,8 +25,8 @@ header ipv4_t {
     bit<8>  ttl;
     bit<8>  protocol;
     bit<16> hdrChecksum;
-    bit<32> srcAddr;
-    bit<32> dstAddr;
+    ipv4Addr_t srcAddr;
+    ipv4Addr_t dstAddr;
 }
 
 header tcp_t{
@@ -62,4 +65,12 @@ struct headers {
 
 struct metadata {
 
+}
+
+struct fw_metadata {
+    ipv4Addr_t srcAddr;
+    ipv4Addr_t dstAddr;
+    bit<8> protocol;
+    bit<16> srcPort;
+    bit<16> dstPort;
 }

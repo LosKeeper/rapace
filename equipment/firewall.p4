@@ -3,14 +3,19 @@
 #include <core.p4>
 #include <v1model.p4>
 
+#include "include/headers.p4"
+#include "include/parser.p4"
+
 /********** Checksum verification control **********/
 control FwVerifyChecksum(inout headers hdr, inout metadata meta) {
-    apply {  }
+    apply {  
+        
+    }
 }
 
 /********** Ingress control **********/
 control FwIngress(inout headers hdr,
-                  inout metadata meta,
+                  inout fw_metadata meta,
                   inout standard_metadata_t standard_metadata) {
 
     bit<32> tmp;
@@ -33,11 +38,11 @@ control FwIngress(inout headers hdr,
     table filter_table {
         key = {
             // rules add by the user in the api with table_add
-            hdr.ipv4.srcAddr: exact;
-            hdr.ipv4.dstAddr: exact;
-            hdr.ipv4.protocol: exact;
-            hdr.ipv4.srcPort: exact;
-            hdr.ipv4.dstPort: exact;
+            meta.srcAddr: exact;
+            meta.dstAddr: exact;
+            meta.protocol: exact;
+            meta.srcPort: exact;
+            meta.dstPort: exact;
         }
         actions = {
             drop;
@@ -48,6 +53,16 @@ control FwIngress(inout headers hdr,
 
     apply {
         if (hdr.ipv4.isValid()) {
+            meta.srcAddr = hdr.ipv4.srcAddr;
+            meta.dstAddr = hdr.ipv4.dstAddr;
+            meta.protocol = hdr.ipv4.protocol;
+            if (hdr.ipv4.protocol == TYPE_TCP) {
+                meta.srcPort = hdr.tcp.srcPort;
+                meta.dstPort = hdr.tcp.dstPort;
+            } else if (hdr.ipv4.protocol == TYPE_UDP) {
+                meta.srcPort = hdr.udp.srcPort;
+                meta.dstPort = hdr.udp.dstPort;
+            }
             filter_table.apply();
         }
     }
@@ -55,19 +70,17 @@ control FwIngress(inout headers hdr,
 
 /********** Egress control **********/
 control FwEgress(inout headers hdr,
-                 inout metadata meta,
+                 inout fw_metadata meta,
                  inout standard_metadata_t standard_metadata) {
     apply {
-        bit<16> tmp = hdr.ipv4.srcPort;
-        hdr.ipv4.srcPort = hdr.ipv4.dstPort;
-        hdr.ipv4.dstPort = tmp;
+        
     }
 }
 
 /********** Checksum computation control **********/
 control FwComputeChecksum(inout headers hdr, inout metadata meta) {
     apply {
-        
+
     }
 }
 

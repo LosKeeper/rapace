@@ -34,7 +34,6 @@ parser AllParser(packet_in packet,
     }
 }
 
-/
 /********** Deparser **********/
 control AllDeparser(packet_out packet, in headers hdr) {
     apply {
