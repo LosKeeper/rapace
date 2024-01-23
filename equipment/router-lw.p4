@@ -7,14 +7,14 @@
 #include "include/parser.p4"
 
 /********** Checksum verification control **********/
-control LbVerifyChecksum(inout headers hdr, inout metadata meta) {
+control RLwVerifyChecksum(inout headers hdr, inout metadata meta) {
     apply {  
 
     }
 }
 
 /********** Ingress control **********/
-control LbIngress(inout headers hdr,
+control RLwIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
     apply {
@@ -23,7 +23,7 @@ control LbIngress(inout headers hdr,
 }
 
 /********** Egress control **********/
-control LbEgress(inout headers hdr,
+control RLwEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
     apply {
@@ -32,7 +32,7 @@ control LbEgress(inout headers hdr,
 }
 
 /********** Checksum computation control **********/
-control LbComputeChecksum(inout headers hdr, inout metadata meta) {
+control RLwComputeChecksum(inout headers hdr, inout metadata meta) {
     apply {
         
     }
@@ -41,9 +41,9 @@ control LbComputeChecksum(inout headers hdr, inout metadata meta) {
 /********** Processing **********/
 V1Switch(
     AllParser(),
-    LbVerifyChecksum(),
-    LbIngress(),
-    LbEgress(),
-    LbComputeChecksum(),
+    RLwVerifyChecksum(),
+    RLwIngress(),
+    RLwEgress(),
+    RLwComputeChecksum(),
     AllDeparser()
 ) main;

@@ -1,62 +1,95 @@
-/* -*- P4_16 -*- */
+/*** firewall.p4 ***/
+
 #include <core.p4>
 #include <v1model.p4>
 
-//My includes
 #include "include/headers.p4"
-#include "include/parsers.p4"
+#include "include/parser.p4"
 
-
-control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
-    apply {  }
+/********** Checksum verification control **********/
+control FwVerifyChecksum(inout headers hdr, inout metadata meta) {
+    apply {  
+        
+    }
 }
 
-control MyIngress(inout headers hdr,
+/********** Ingress control **********/
+control FwIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
+
+    bit<32> tmp;
+    register<bit<32>>(1) total_packets;
+    register<bit<32>>(1) filtered_packets;
+
     action drop() {
         mark_to_drop(standard_metadata);
+        filtered_packets.read(tmp, 0);
+        filtered_packets.write(0, tmp + 1);
+        total_packets.read(tmp, 0);
+        total_packets.write(0, tmp + 1);
     }
 
-    //TODO: Do the case of UDP
-    table blacklist {
+    action count() {
+        total_packets.read(tmp, 0);
+        total_packets.write(0, tmp + 1);
+    }
+
+    table filter_table {
         key = {
-            hdr.ipv4.srcAddr: exact;
-            hdr.ipv4.dstAddr: exact;
-            hdr.ipv4.protocol: exact;
-            hdr.tcp.srcPort: exact;
-            hdr.tcp.dstPort: exact;
+            // rules add by the user in the api with table_add
+            meta.srcAddr: exact;
+            meta.dstAddr: exact;
+            meta.protocol: exact;
+            meta.srcPort: exact;
+            meta.dstPort: exact;
         }
-        actions = { drop; }
-        size = 1024;
-        default_action = drop;
+        actions = {
+            drop;
+            count;
+        }
+        size = 1024; 
     }
 
     apply {
-        // Drop blacklisted packets
-        blacklist.apply();
+        if (hdr.ipv4.isValid()) {
+            meta.srcAddr = hdr.ipv4.srcAddr;
+            meta.dstAddr = hdr.ipv4.dstAddr;
+            meta.protocol = hdr.ipv4.protocol;
+            if (hdr.ipv4.protocol == TYPE_TCP) {
+                meta.srcPort = hdr.tcp.srcPort;
+                meta.dstPort = hdr.tcp.dstPort;
+            } else if (hdr.ipv4.protocol == TYPE_UDP) {
+                meta.srcPort = hdr.udp.srcPort;
+                meta.dstPort = hdr.udp.dstPort;
+            }
+            filter_table.apply();
+        }
     }
 }
 
-control MyEgress(inout headers hdr,
+/********** Egress control **********/
+control FwEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
     apply {
+        
+    }
+}
+
+/********** Checksum computation control **********/
+control FwComputeChecksum(inout headers hdr, inout metadata meta) {
+    apply {
 
     }
 }
 
-control MyComputeChecksum(inout headers hdr, inout metadata meta) {
-    apply {  }
-}
-
-
-//switch architecture
+/********** Processing **********/
 V1Switch(
-MyParser(),
-MyVerifyChecksum(),
-MyIngress(),
-MyEgress(),
-MyComputeChecksum(),
-MyDeparser()
+    AllParser(),
+    FwVerifyChecksum(),
+    FwIngress(),
+    FwEgress(),
+    FwComputeChecksum(),
+    AllDeparser()
 ) main;
