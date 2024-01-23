@@ -4,6 +4,8 @@ const bit<16> TYPE_IPV4 = 0x800;
 const bit<8>  TYPE_TCP  = 6;
 const bit<8>  TYPE_UDP  = 17;
 
+typedef bit<8> count_t;
+typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ipv4Addr_t;
 typedef bit<9> egressSpec_t;
@@ -71,4 +73,7 @@ struct metadata {
     bit<16> srcPort;
     bit<16> dstPort;
     bit<16> hash;
+
+    bit<14> ecmp_hash;
+    bit<14> ecmp_group_id;
 }
