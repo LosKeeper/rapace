@@ -8,7 +8,6 @@ typedef bit<8> count_t;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ipv4Addr_t;
-typedef bit<9> egressSpec_t;
 
 header ethernet_t {
     macAddr_t srcAddr;

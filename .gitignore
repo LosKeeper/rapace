@@ -4,3 +4,4 @@ equipment/*.txt
 equipment/*.json
 log/
 pcap/
+__pycache__/
