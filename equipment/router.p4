@@ -85,7 +85,7 @@ control RIngress(inout headers hdr,
     
     apply {
         if(hdr.ipv4.isValid() && hdr.ipv4.ttl > 1){
-             // Get the number of packet received
+            // Get the number of packet received
             count_t current_count_in;
             num_packet_received.read(current_count_in, (bit<32>)standard_metadata.ingress_port);
             current_count_in = current_count_in + 1;
@@ -93,8 +93,17 @@ control RIngress(inout headers hdr,
             // Update the number of packet received
             num_packet_received.write((bit<32>)standard_metadata.ingress_port, current_count_in);
 
+            // Get the number of packet encapsulated
+
+
+            // Route the packet
+            switch(ipv4_lpm.apply().action_run) {
+                ecmp_group: {
+                    ecmp_group_to_nhop.apply();
+                }
+            }
+        
         }
-       
     }
 }
 
@@ -102,6 +111,7 @@ control RIngress(inout headers hdr,
 control REgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
+
     apply {
         
     }
@@ -110,9 +120,26 @@ control REgress(inout headers hdr,
 /********** Checksum computation control **********/
 control RComputeChecksum(inout headers hdr, inout metadata meta) {
     apply {
+        update_checksum(
+        hdr.ipv4.isValid(),
+            { hdr.ipv4.version,
+                hdr.ipv4.ihl,
+                hdr.ipv4.dscp,
+                hdr.ipv4.ecn,
+                hdr.ipv4.totalLen,
+                hdr.ipv4.identification,
+                hdr.ipv4.flags,
+                hdr.ipv4.fragOffset,
+                hdr.ipv4.ttl,
+                hdr.ipv4.protocol,
+                hdr.ipv4.srcAddr,
+                hdr.ipv4.dstAddr },
+                hdr.ipv4.hdrChecksum,
+                HashAlgorithm.csum16);
+        }
         
-    }
 }
+
 
 /********** Processing **********/
 V1Switch(
