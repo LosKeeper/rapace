@@ -37,7 +37,6 @@ control FwIngress(inout headers hdr,
 
     table filter_table {
         key = {
-            // rules add by the user in the api with table_add
             meta.srcAddr: exact;
             meta.dstAddr: exact;
             meta.protocol: exact;

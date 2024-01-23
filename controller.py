@@ -23,47 +23,29 @@ class MetaController:
         
         with open(self.file_yaml, 'r') as file:
             config_data = yaml.safe_load(file)
-
-            compiled_files = []
             
             for node_config in config_data.get('nodes', []):
                 node_name = node_config.get('name')
                 node_type = node_config.get('type')
-                node_neighbors = node_config.get('neighbors')
+                node_neighbors = node_config.get('neighbors').split()
                 node_inflow = node_config.get('inflow')
 
                 print(f'Working on {node_name} switch:')
 
                 if node_type == 'firewall':
                     fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology)
-                    if 'firewall' not in compiled_files:
-                        fw_node.compile('equipment/firewall.p4')
-                        compiled_files.append('firewall')
-                    fw_node.flash('equipment/firewall.json')
                     self.controllers[node_name] = fw_node
 
                 elif node_type == 'load-balancer':
                     lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology)
-                    if 'load-balancer' not in compiled_files:
-                        lb_node.compile('equipment/load-balancer.p4')
-                        compiled_files.append('load-balancer')
-                    lb_node.flash('equipment/load-balancer.json')
                     self.controllers[node_name] = lb_node
 
                 elif node_type == 'router':
                     router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology)
-                    if 'router' not in compiled_files:
-                        router_node.compile('equipment/router.p4')
-                        compiled_files.append('router')
-                    router_node.flash('equipment/router.json')
                     self.controllers[node_name] = router_node
 
                 elif node_type == 'router-lw':
                     lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, self.topology)
-                    if 'router-lw' not in compiled_files:
-                        lw_router_node.compile('equipment/router-lw.p4')
-                        compiled_files.append('router-lw')
-                    lw_router_node.flash('equipment/router-lw.json')
                     self.controllers[node_name] = lw_router_node
 
                 else:
@@ -119,9 +101,13 @@ class Firewall(Controller):
         super().__init__(name, neighbors, inflow, topology)
         """Add specific attributes for firewall"""
         self.rules = []  # List to store firewall rules
+        self.compile('equipment/firewall.p4')
+        self.flash('equipment/firewall.json')
 
     def init_table(self):
         """Implement firewall table initialization"""
+        # ...
+                
         for rule in self.rules:
             self.add_rule(rule)
 
@@ -144,22 +130,24 @@ class LoadBalancer(Controller):
         self.in_port = inflow
         self.out_ports = neighbors 
         self.rate_limit = 1  # Default rate limit, can be adjusted
+        self.compile('equipment/load-balancer.p4')
+        self.flash('equipment/load-balancer.json')
+        self.init_table()
     
     def init_table(self):
         """Implement load balancer table initialization"""
-        for port in self.out_ports:
-            entry = {
-                "hdr.ipv4.srcAddr": "0.0.0.0",
-                "hdr.ipv4.dstAddr": "0.0.0.0",
-                "hdr.ipv4.protocol": 0,
-                "hdr.tcp.srcPort": 0,
-                "hdr.tcp.dstPort": 0,
-                "action": "forward",
-                "port": port,
-            }
-            self.api.table_add("load_balancer", entry)
+        self.api.table_clear("entry_port")
+        self.api.table_clear("load_balancer")
+        
+        port_in = self.topology.node_to_node_port_num(self.name, self.in_port)
+        self.api.table_add("entry_port", "random_nhop", [str(port_in)], [str(len(self.out_ports))])
+        for port_out_name in self.out_ports:
+            port_out = self.topology.node_to_node_port_num(self.name, port_out_name)   
+            print(port_in, port_out)
+            self.api.table_add("load_balancer", "set_nhop", [str(port_in)], [str(port_out)])
+            self.api.table_add("entry_port", "set_nhop", [str(port_out)], [str(port_in)])
     
-    def set_rate_limit(self, rate: int):
+    def set_rate_limit(self, rate: int):    
         """Implement method to set rate limit"""
         self.rate_limit = rate
     
@@ -174,6 +162,8 @@ class RouterController(Controller):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
         super().__init__(name, neighbors, inflow, topology)
         # Add specific attributes for router controller
+        self.compile('equipment/router.p4')
+        self.flash('equipment/router.json')
     
     def init_table(self):
         # Implement router controller table initialization
@@ -184,6 +174,8 @@ class RouterLWController(Controller):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
         super().__init__(name, neighbors, inflow, topology)
         # Add specific attributes for lightweight router controller
+        self.compile('equipment/router-lw.p4')
+        self.flash('equipment/router-lw.json')
     
     def init_table(self):
         # Implement lightweight router controller table initialization

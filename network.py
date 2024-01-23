@@ -18,7 +18,7 @@ for i in range(0, NB):
             net.addLink(f's{i}', f's{j}')
     
 # Assignment strategy
-net.l3()
+net.l2()
 
 # Node general options
 net.enablePcapDumpAll()

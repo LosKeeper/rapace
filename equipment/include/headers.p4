@@ -6,6 +6,7 @@ const bit<8>  TYPE_UDP  = 17;
 
 typedef bit<48> macAddr_t;
 typedef bit<32> ipv4Addr_t;
+typedef bit<9> egressSpec_t;
 
 header ethernet_t {
     macAddr_t srcAddr;
@@ -69,4 +70,5 @@ struct metadata {
     bit<8> protocol;
     bit<16> srcPort;
     bit<16> dstPort;
+    bit<16> hash;
 }
