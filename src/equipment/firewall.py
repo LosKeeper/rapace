@@ -5,8 +5,8 @@ from typing import List
 from src.equipment.controller import Controller
 
 class Firewall(Controller):
-    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
-        super().__init__(name, neighbors, inflow, topology)
+    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph, compileWanted: bool) -> None:
+        super().__init__(name, neighbors, inflow, topology, compileWanted)
         """Add specific attributes for firewall"""
         self.rules = []  # List to store firewall rules
         self.compile('equipment/firewall.p4')

@@ -4,8 +4,8 @@ from typing import List
 from src.equipment.controller import Controller
 
 class LoadBalancer(Controller):
-    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
-        super().__init__(name, neighbors, inflow, topology)
+    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph, compileWanted: bool) -> None:
+        super().__init__(name, neighbors, inflow, topology, compileWanted)
         self.in_port = inflow
         self.out_ports = neighbors 
         self.rate_limit = 1  # Default rate limit, can be adjusted

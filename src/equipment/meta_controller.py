@@ -8,12 +8,13 @@ from src.equipment.router_lw import RouterLWController
 
 
 class MetaController:
-    def __init__(self, user_input: str):
+    def __init__(self, user_input: str, compileWanted: bool = True):
         self.user_input = user_input
         self.file_yaml = f'{user_input}.yaml'
         self.file_json = f'{user_input}.json'
         self.topology = load_topo(self.file_json)
         self.controllers = {}
+        self.compileWanted = compileWanted
 
     def Import(self):
         """Import logical topology entered by the user on physical topology"""
@@ -31,19 +32,19 @@ class MetaController:
                 print(f'Working on {node_name} switch:')
 
                 if node_type == 'firewall':
-                    fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology)
+                    fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = fw_node
 
                 elif node_type == 'load-balancer':
-                    lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology)
+                    lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = lb_node
 
                 elif node_type == 'router':
-                    router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology)
+                    router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = router_node
 
                 elif node_type == 'router-lw':
-                    lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, self.topology)
+                    lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = lw_router_node
 
                 else:

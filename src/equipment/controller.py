@@ -4,15 +4,19 @@ from p4utils.utils.topology import NetworkGraph
 from typing import List
 
 class Controller:
-    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
+    def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph, compileWanted: bool) -> None:
         self.name = name
         self.topology = topology
         self.api = SimpleSwitchThriftAPI(self.topology.get_thrift_port(name))
+        self.compileWanted = compileWanted
         
     def compile(self, p4_src: str):
-        print('Compiling P4 source file...')
-        source = P4C(p4_src, "/usr/local/bin/p4c")
-        source.compile()
+        if self.compileWanted:
+            print('Compiling P4 source file...')
+            source = P4C(p4_src, "/usr/local/bin/p4c")
+            source.compile()
+        else:
+            print('No compilation, only loading JSON file...')
         
     def flash(self, json_src: str):
         print('Loading and swaping JSON file...')
