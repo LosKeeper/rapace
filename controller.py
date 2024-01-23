@@ -7,10 +7,77 @@ from p4utils.utils.compiler import P4C
 import yaml
 from typing import List 
 
-topology = load_topo('topology.json')
-controllers = {}
+USER_INPUT = 'topology' # file name without extension input of the user
 
-class P4Switch:
+class MetaController:
+    def __init__(self, user_input: str):
+        self.user_input = user_input
+        self.file_yaml = f'{user_input}.yaml'
+        self.file_json = f'{user_input}.json'
+        self.topology = load_topo(self.file_json)
+        self.controllers = {}
+
+    def Import(self):
+        """Import logical topology entered by the user on physical topology"""
+        print('Importing user-input logical topology into physical topology...')
+        
+        with open(self.file_yaml, 'r') as file:
+            config_data = yaml.safe_load(file)
+
+            compiled_files = []
+            
+            for node_config in config_data.get('nodes', []):
+                node_name = node_config.get('name')
+                node_type = node_config.get('type')
+                node_neighbors = node_config.get('neighbors')
+                node_inflow = node_config.get('inflow')
+
+                print(f'Working on {node_name} switch:')
+
+                if node_type == 'firewall':
+                    fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology)
+                    if 'firewall' not in compiled_files:
+                        fw_node.compile('equipment/firewall.p4')
+                        compiled_files.append('firewall')
+                    fw_node.flash('equipment/firewall.json')
+                    self.controllers[node_name] = fw_node
+
+                elif node_type == 'load-balancer':
+                    lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology)
+                    if 'load-balancer' not in compiled_files:
+                        lb_node.compile('equipment/load-balancer.p4')
+                        compiled_files.append('load-balancer')
+                    lb_node.flash('equipment/load-balancer.json')
+                    self.controllers[node_name] = lb_node
+
+                elif node_type == 'router':
+                    router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology)
+                    if 'router' not in compiled_files:
+                        router_node.compile('equipment/router.p4')
+                        compiled_files.append('router')
+                    router_node.flash('equipment/router.json')
+                    self.controllers[node_name] = router_node
+
+                elif node_type == 'router-lw':
+                    lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, self.topology)
+                    if 'router-lw' not in compiled_files:
+                        lw_router_node.compile('equipment/router-lw.p4')
+                        compiled_files.append('router-lw')
+                    lw_router_node.flash('equipment/router-lw.json')
+                    self.controllers[node_name] = lw_router_node
+
+                else:
+                    print(f"Invalid type for node: {node_type}")
+                    exit(1)
+
+    def list_controllers(self):
+        """List all controllers running in the network."""
+        print("Controllers:")
+        for node_id, controller in self.controllers.items():
+            print(f"{node_id}: {type(controller).__name__}")
+            
+
+class Controller:
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
         self.name = name
         self.topology = topology
@@ -47,7 +114,7 @@ class P4Switch:
         pass
 
 
-class Firewall(P4Switch):
+class Firewall(Controller):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
         super().__init__(name, neighbors, inflow, topology)
         """Add specific attributes for firewall"""
@@ -71,7 +138,7 @@ class Firewall(P4Switch):
         self.rules.append(flow)
 
     
-class LoadBalancer(P4Switch):
+class LoadBalancer(Controller):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
         super().__init__(name, neighbors, inflow, topology)
         self.in_port = inflow
@@ -103,7 +170,7 @@ class LoadBalancer(P4Switch):
             self.api.set_egress_port_rate_limit(port, self.rate_limit)
     
     
-class RouterController(P4Switch):
+class RouterController(Controller):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
         super().__init__(name, neighbors, inflow, topology)
         # Add specific attributes for router controller
@@ -113,7 +180,7 @@ class RouterController(P4Switch):
         pass
 
     
-class RouterLWController(P4Switch):
+class RouterLWController(Controller):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph) -> None:
         super().__init__(name, neighbors, inflow, topology)
         # Add specific attributes for lightweight router controller
@@ -123,43 +190,6 @@ class RouterLWController(P4Switch):
         pass
 
 ### Network topology parsing and creation
-
-config_file = 'topology.yaml'
-with open(config_file, 'r') as file:
-    config_data = yaml.safe_load(file)
-    
-for node_config in config_data.get('nodes', []):
-    node_name = node_config.get('name')
-    node_type = node_config.get('type')
-    node_neighbors = node_config.get('neighbors')
-    node_inflow = node_config.get('inflow')
-
-    print(f'Working on {node_name} switch:')
-
-    if node_type == 'firewall':
-        fw_node = Firewall(node_name, node_neighbors, node_inflow, topology)
-        fw_node.compile('equipment/firewall.p4')
-        fw_node.flash('equipment/firewall.json')
-        controllers[node_name] = fw_node
-        
-    elif node_type == 'load-balancer':
-        lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, topology)
-        lb_node.compile('equipment/load-balancer.p4')
-        lb_node.flash('equipment/load-balancer.json')
-        controllers[node_name] = lb_node
-        
-    elif node_type == 'router':
-        router_node = RouterController(node_name, node_neighbors, node_inflow, topology)
-        router_node.compile('equipment/router.p4')
-        router_node.flash('equipment/router.json')
-        controllers[node_name] = router_node
-        
-    elif node_type == 'router-lw':
-        lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, topology)
-        lw_router_node.compile('equipment/router-lw.p4')
-        lw_router_node.flash('equipment/router-lw.json')
-        controllers[node_name] = lw_router_node
-
-    else:
-        print(f"Invalid type for node: {node_type}")
-        exit(1)
+meta_controller = MetaController(USER_INPUT)
+meta_controller.Import()
+meta_controller.list_controllers()
