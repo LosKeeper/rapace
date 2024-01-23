@@ -27,6 +27,50 @@ class Api(cmd.Cmd):
         
     def do_help(self, args):
         print("Available commands:")
+        # Get a list of all methods in the class
+        methods = self.get_names()
+        # Filter the list to only include methods that start with 'do_'
+        excluded_methods = {'do_EOF', 'do_help', 'do_quit', 'do_exit'}
+        commands = [method[3:] for method in methods if method.startswith('do_') and method not in excluded_methods]
+        for command in commands:
+            print(f"  {command}")
+        print("Type '<command> help' for more information on a specific command")
+        
+        
+    def do_add_fw_rule(self, args):
+        # Split the argument string into a list of words
+        args = args.split()
+
+        # Check if args is empty or if the first argument is "help"
+        if not args or (args[0] == "help") or len(args) < 5:
+            print("Usage: add_fw_rule <src_ip> <dst_ip> <protocol> <src_port> <dst_port>")
+            return
+
+        print("Adding firewall rule...")
+        
+        
+    def do_set_rate_lb(self, args):
+        # Split the argument string into a list of words
+        args = args.split()
+
+        # Check if args is empty or if the first argument is "help"
+        if not args or (args[0] == "help") or len(args) < 1:
+            print("Usage: set_rate_lb <pkts/s>")
+            return
+
+        print("Setting rate...")
+        
+        
+    def do_add_encap_node(self, args):
+        # Split the argument string into a list of words
+        args = args.split()
+
+        # Check if args is empty or if the first argument is "help"
+        if not args or (args[0] == "help") or len(args) < 2:
+            print("Usage: add_encap_node <flow> <node>")
+            return
+
+        print("Adding encap node...")
 
 
     def do_swap(self, args):
@@ -59,6 +103,7 @@ class Api(cmd.Cmd):
         else:
             print("Usage: see <argument>")
             print("available arguments: topology, filters, load, tunnelled")
+            
     
     def do_change_weight(self, args):
         # Check for arguments
@@ -93,9 +138,14 @@ class Api(cmd.Cmd):
     def do_quit(self, args):
         print("Quitting...")
         return True
+    
+    def do_exit(self, args):
+        return self.do_quit(args)
+    
 
     def do_EOF(self, args):
         return self.do_quit(args)
+    
     
 if __name__ == "__main__":
     Api('topology.yaml').cmdloop()
