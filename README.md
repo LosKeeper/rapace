@@ -1,28 +1,28 @@
 # RAPACE
-> Projet de réseaux programmables
+> Programmable networks project
 
-## Auteurs
+## Authors
 - Thomas DUMOND
 - Ethan HURET
 
-## Prérequis
-> Le projet a été testé sur une machine virtuelle [QEMU](https://polybox.ethz.ch/index.php/s/QlrfHm7uYw6vISe) fournie par p4.
+## Prerequisites
+> The project has been tested on a virtual machine [QEMU] [QEMU](https://polybox.ethz.ch/index.php/s/QlrfHm7uYw6vISe) provided by p4.
 
 - ### Patch
-Avant de commencer, il est nécessaire de patcher cette machine virtuelle avec le script suivant :
+Before starting, it is necessary to patch this virtual machine with the following script:
 ```bash
 cd patch
 ./patch.sh
 ```
 ## [Sujet](sujet.pdf)
 
-## Démarrage
-Pour démarrer le projet, il faut dans un premier temps démarrer le réseau "physhique" avec :
+## Startup
+- To start the project, you first need to start the "physical" network with :
 ```bash
 sudo python phyNet.py
 ```
-Dans un second temps, il faut rentrer la topologie logique du réseau (celle qui sera utilisée) dans ``topology.yaml``.
-Enfin, il faut lancer démarrer le réseau logique avec :
+- Next, enter the logical network topology (the one that will be used) in ``topology.yaml``.
+- Finally, start the logical network with :
 ```bash
 sudo python logiNet.py 
 ```
