@@ -1,7 +1,7 @@
 .vscode
-equipment/*.p4i
-equipment/*.txt
-equipment/*.json
+p4src/*.p4i
+p4src/*.txt
+p4src/*.json
 log/
 pcap/
 __pycache__/

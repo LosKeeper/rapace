@@ -8,8 +8,8 @@ class RouterLWController(Controller):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph, compileWanted: bool) -> None:
         super().__init__(name, neighbors, inflow, topology, compileWanted)
         # Add specific attributes for lightweight router controller
-        self.compile('equipment/router-lw.p4')
-        self.flash('equipment/router-lw.json')
+        self.compile('p4src/router-lw.p4')
+        self.flash('p4src/router-lw.json')
     
     def init_table(self):
         # Implement lightweight router controller table initialization

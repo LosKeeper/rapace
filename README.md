@@ -17,7 +17,12 @@ cd patch
 ## [Sujet](sujet.pdf)
 
 ## Démarrage
-Pour démarrer le projet, il faut dans un premier rentre la topologie du réseau dans ``topology.yaml`` et éxecuter la commande :
+Pour démarrer le projet, il faut dans un premier temps démarrer le réseau "physhique" avec :
 ```bash
-python network.py 
+sudo python phyNet.py
+```
+Dans un second temps, il faut rentrer la topologie logique du réseau (celle qui sera utilisée) dans ``topology.yaml``.
+Enfin, il faut lancer démarrer le réseau logique avec :
+```bash
+sudo python logiNet.py 
 ```

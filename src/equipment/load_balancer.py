@@ -9,8 +9,8 @@ class LoadBalancer(Controller):
         self.in_port = inflow
         self.out_ports = neighbors 
         self.rate_limit = 1  # Default rate limit, can be adjusted
-        self.compile('equipment/load-balancer.p4')
-        self.flash('equipment/load-balancer.json')
+        self.compile('p4src/load-balancer.p4')
+        self.flash('p4src/load-balancer.json')
         self.init_table()
     
     def init_table(self):

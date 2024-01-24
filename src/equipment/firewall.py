@@ -9,8 +9,8 @@ class Firewall(Controller):
         super().__init__(name, neighbors, inflow, topology, compileWanted)
         """Add specific attributes for firewall"""
         self.rules = []  # List to store firewall rules
-        self.compile('equipment/firewall.p4')
-        self.flash('equipment/firewall.json')
+        self.compile('p4src/firewall.p4')
+        self.flash('p4src/firewall.json')
 
     def init_table(self):
         """Implement firewall table initialization"""
