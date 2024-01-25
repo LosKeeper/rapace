@@ -10,5 +10,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     meta_controller = MetaController(USER_INPUT, args.no_compile)
-    meta_controller.Import()
     meta_controller.list_controllers()

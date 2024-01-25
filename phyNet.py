@@ -6,19 +6,28 @@ net = NetworkAPI()
 net.setLogLevel('info')
 net.setCompiler(p4rt=True)
 
-NB = 8
+NB_S = 8
+NB_H = 2
 
-# Create N nodes
-for i in range(0, NB):
+# Create N switches
+for i in range(0, NB_S):
     net.addP4Switch(f's{i}')
     
-for i in range(0, NB):
-    for j in range(i, NB):
+for i in range(0, NB_S):
+    for j in range(i, NB_S):
         if i != j:
             net.addLink(f's{i}', f's{j}')
+
+# Create N hosts
+for i in range(0, NB_H):
+    net.addHost(f'h{i}')
     
+for i in range(0, NB_H):
+    for j in range(0, NB_S):
+        net.addLink(f'h{i}', f's{j}')
+
 # Assignment strategy
-net.l2()
+net.l3()
 
 # Node general options
 net.enablePcapDumpAll()

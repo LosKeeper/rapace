@@ -9,6 +9,7 @@ class Controller:
         self.topology = topology
         self.api = SimpleSwitchThriftAPI(self.topology.get_thrift_port(name))
         self.compileWanted = compileWanted
+        self.mininet_update()
         
     def compile(self, p4_src: str):
         if self.compileWanted:

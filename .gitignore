@@ -5,3 +5,4 @@ p4src/*.json
 log/
 pcap/
 __pycache__/
+*.json

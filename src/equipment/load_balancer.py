@@ -34,8 +34,8 @@ class LoadBalancer(Controller):
         """Implement method to set rate limit"""
         self.rate_limit = rate
     
-    def mininet_update(self):
-        super().mininet_update()
+    # def mininet_update(self):
+    #     super().mininet_update()
         """Set the rate limit for each out port"""
-        for port in self.out_ports:
-            self.api.set_egress_port_rate_limit(port, self.rate_limit)
+        # for port in self.out_ports:
+        #     self.api.set_egress_port_rate_limit(port, self.rate_limit)

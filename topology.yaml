@@ -29,5 +29,9 @@ nodes:
     inflow: 
   - name: s7
     type: router 
-    neighbors: s5 s6
+    neighbors: s5 s6 h0
+    inflow: 
+  - name: h0
+    type: host
+    neighbors: s7
     inflow: 
