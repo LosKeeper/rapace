@@ -26,19 +26,27 @@ control RIngress(inout headers hdr,
         mark_to_drop(standard_metadata);
     }
 
-    action set_nhop(egressSpec_t port) {
+    action forward(macAddr_t dstAddr, egressSpec_t port) {
+
+        //set the src mac address as the previous dst
+        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+
+       //set the destination mac address that we got from the match in the table
+        hdr.ethernet.dstAddr = dstAddr;
+
         //set the output port that we also get from the table
         standard_metadata.egress_spec = port;
+
         //decrease ttl by 1
-        hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+        hdr.ipv4.ttl = hdr.ipv4.ttl -1;
     }
 
-    table set_nhop {
+    table ipv4_lpm {
         key = {
             hdr.ipv4.dstAddr: exact;
         }
         actions = {
-            set_nhop;
+            forward;
             drop;
         }
         size = 1024;
@@ -55,11 +63,8 @@ control RIngress(inout headers hdr,
             // Update the number of packet received
             num_packet_received.write((bit<32>)standard_metadata.ingress_port, current_count_in);
 
-            // Get the number of packet encapsulated
-
-
             // Route the packet
-            set_nhop.apply().action_run
+            ipv4_lpm.apply();
         }
     }
 }

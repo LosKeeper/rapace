@@ -17,5 +17,5 @@ class RouterController(Controller):
         for srcNodes in self.topology.get_hosts_connected_to(self.name):
             for dstNodes in self.topology.get_hosts_connected_to(self.name):
                 if srcNodes != dstNodes:
-                    self.table_add('ipv4_lpm', 'set_next_hop', [srcNodes, dstNodes], [self.topology.get_host_ip(dstNodes), self.topology.get_host_mac(dstNodes)])
+                    self.table_add('ipv4_lpm', 'forward', [srcNodes, dstNodes], [self.topology.get_host_ip(dstNodes), self.topology.get_host_mac(dstNodes)])
         

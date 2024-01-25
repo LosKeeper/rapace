@@ -7,7 +7,8 @@ class Controller:
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph, compileWanted: bool) -> None:
         self.name = name
         self.topology = topology
-        self.api = SimpleSwitchThriftAPI(self.topology.get_thrift_port(name))
+        if name != 'host':
+            self.api = SimpleSwitchThriftAPI(self.topology.get_thrift_port(name))
         self.compileWanted = compileWanted
         self.mininet_update()
         
