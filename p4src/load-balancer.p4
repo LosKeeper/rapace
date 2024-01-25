@@ -22,8 +22,15 @@ control LbIngress(inout headers hdr,
     }
 
     action set_nhop(egressSpec_t port) {
+        //set the src mac address as the previous dst
+        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+
+        //set the destination mac address that we got from the match in the table
+        hdr.ethernet.dstAddr = dstAddr;
+
         //set the output port that we also get from the table
         standard_metadata.egress_spec = port;
+        
         //decrease ttl by 1
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }

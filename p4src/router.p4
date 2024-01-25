@@ -16,18 +16,17 @@ control RVerifyChecksum(inout headers hdr, inout metadata meta) {
 control RIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-    // Counter of number of packet received
-    register<count_t>(64) num_packet_received;
+    // // Counter of number of packet received
+    // register<count_t>(64) num_packet_received;
 
-    // Counter of number of packet encapsulated
-    register<count_t>(64) num_packet_encapsulated;
+    // // Counter of number of packet encapsulated
+    // register<count_t>(64) num_packet_encapsulated;
 
     action drop() {
         mark_to_drop(standard_metadata);
     }
 
     action set_nhop(macAddr_t dstAddr, egressSpec_t port) {
-
         //set the src mac address as the previous dst
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
 
@@ -43,7 +42,7 @@ control RIngress(inout headers hdr,
 
     table ipv4_lpm {
         key = {
-            hdr.ipv4.dstAddr: exact;
+            hdr.ipv4.dstAddr: lpm;
         }
         actions = {
             set_nhop;
@@ -56,12 +55,12 @@ control RIngress(inout headers hdr,
     apply {
         if(hdr.ipv4.isValid()){
             // Get the number of packet received
-            count_t current_count_in;
-            num_packet_received.read(current_count_in, (bit<32>)standard_metadata.ingress_port);
-            current_count_in = current_count_in + 1;
+            // count_t current_count_in;
+            // num_packet_received.read(current_count_in, (bit<32>)standard_metadata.ingress_port);
+            // current_count_in = current_count_in + 1;
 
             // Update the number of packet received
-            num_packet_received.write((bit<32>)standard_metadata.ingress_port, current_count_in);
+            // num_packet_received.write((bit<32>)standard_metadata.ingress_port, current_count_in);
 
             // Route the packet
             ipv4_lpm.apply();

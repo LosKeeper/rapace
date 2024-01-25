@@ -118,9 +118,7 @@ class MetaController:
                 else:
                     print(f"Invalid type for node: {node_type}")
                     exit(1)
-        
-        print('Logical topology imported successfully!')
-        
+
         
     def add_loopback(self, node_name: str):
         """Add loopback ip address"""
@@ -130,7 +128,7 @@ class MetaController:
         node_config = topology_data.get('nodes', [])
         
         node_config = [node for node in node_config if node['id'] == node_name][0]
-        node_config['loopback'] = "127.0.0."+str(node_name.split('s')[1])
+        node_config['loopback'] = "127.0.0."+str(int(node_name.split('s')[1]) + 1)
         
         with open(self.file_modified_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)

@@ -26,3 +26,7 @@ sudo python phyNet.py
 ```bash
 sudo python logiNet.py 
 ```
+
+## WARNINGS 
+- Think to make correspond the link between host and router, like host accept only one interface.
+- If the meta-controller cannot input entries in table, re-launch the program.  

@@ -7,7 +7,6 @@ net.setLogLevel('info')
 net.setCompiler(p4rt=True)
 
 NB_S = 8
-NB_H = 2
 
 # Create N switches
 for i in range(0, NB_S):
@@ -19,15 +18,13 @@ for i in range(0, NB_S):
             net.addLink(f's{i}', f's{j}')
 
 # Create N hosts
-for i in range(0, NB_H):
-    net.addHost(f'h{i}')
-    
-for i in range(0, NB_H):
-    for j in range(0, NB_S):
-        net.addLink(f'h{i}', f's{j}')
+net.addHost('h1')
+net.addHost('h2')
+net.addLink('s1','h1')
+net.addLink('s4','h2')
 
 # Assignment strategy
-net.l3()
+net.l2()
 
 # Node general options
 net.enablePcapDumpAll()
