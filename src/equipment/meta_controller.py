@@ -7,6 +7,7 @@ from src.equipment.firewall import Firewall
 from src.equipment.load_balancer import LoadBalancer
 from src.equipment.router import RouterController
 from src.equipment.router_lw import RouterLWController
+from src.equipment.host import Host
 from src.equipment import helpers
 
 DEFAULT = 100
