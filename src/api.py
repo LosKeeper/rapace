@@ -92,7 +92,8 @@ class Api(cmd.Cmd, MetaController):
             print("Usage: swap <node_id> <equipment> [args]")
             return
 
-        print("Swapping...")
+        self.meta_controller.swap_node(args[0], args[1])
+        print(f"Swapped {args[0]} with {args[1]}")
 
         
     def do_see(self, args):

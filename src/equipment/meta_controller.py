@@ -237,3 +237,49 @@ class MetaController:
                 return controller
         return None
     
+    def swap_node(self, node_name:str, equipment: str):
+        """Swap a node by another one"""
+        
+        # Check if this node is existing
+        if node_name not in self.topology.get_p4switches():
+            print(f"Node {node_name} is not existing in the physical network or it's an host")
+            return
+        
+        # Update the yaml file
+        with open(self.file_yaml, 'r') as file:
+            config_data = yaml.safe_load(file)
+            
+        for node_config in config_data.get('nodes', []):
+            if node_config.get('name') == node_name:
+                node_config['type'] = equipment
+                node_inflow = node_config.get('inflow')
+                
+        with open(self.file_yaml, 'w') as file:
+            yaml.dump(config_data, file, indent=2)
+            
+        # Update the json file
+        with open(self.file_modified_json, 'r') as json_file:
+            topology_data = json.load(json_file)
+            
+        for node_config in topology_data.get('nodes', []):
+            if node_config.get('id') == node_name:
+                node_config['type'] = equipment
+                
+        with open(self.file_modified_json, 'w') as json_file:
+            json.dump(topology_data, json_file, indent=2)
+            
+        # Update the topology
+        self.update_topology()
+        
+        # Start new equipment
+        if equipment == "firewall":
+            self.controllers[node_name] = Firewall(node_name, self.topology.get_neighbors(node_name), None, self.topology, False)
+        elif equipment == "load-balancer":
+            self.controllers[node_name] = LoadBalancer(node_name, self.topology.get_neighbors(node_name), node_inflow, self.topology, False)
+        elif equipment == "router":
+            self.controllers[node_name] = RouterController(node_name, self.topology.get_neighbors(node_name), None, self.topology, False)
+        elif equipment == "router-lw":
+            self.controllers[node_name] = RouterController(node_name, self.topology.get_neighbors(node_name), None, self.topology, False)
+        else:
+            print(f"Invalid type for node: {node_type}")
+            
