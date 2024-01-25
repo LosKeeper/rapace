@@ -13,13 +13,16 @@ from src.equipment import helpers
 DEFAULT = 100
 
 class MetaController:
-    def __init__(self, user_input: str, compileWanted: bool = True):
+    def __init__(self, user_input: str, file_to_compile: str, compileWanted: bool = True):
         self.user_input = user_input
         self.file_yaml = f'{user_input}.yaml'
         self.file_json = f'{user_input}.json'
         self.topology = None
         self.controllers = {}
+        self.file_to_compile = file_to_compile
         self.compileWanted = compileWanted
+        if file_to_compile != "":
+            self.compileWanted = False
         self.index = DEFAULT
         self.update_topology()
         self.convert_phy_to_logi()
@@ -37,6 +40,13 @@ class MetaController:
             config_data = yaml.safe_load(file)
             nodes = []
             
+            # if node is a router, add loopback ip address
+            for node_config in config_data.get('nodes', []):
+                node_name = node_config.get('name')
+                node_type = node_config.get('type')
+                if node_type != 'host':
+                    self.add_loopback(node_name)
+            
             for node_config in config_data.get('nodes', []):
                 node_name = node_config.get('name')
                 node_type = node_config.get('type')
@@ -48,33 +58,44 @@ class MetaController:
                     if neighbors not in node_neighbors:
                         self.remove_link(node_name, neighbors)
                         
-                # if node is a router, add loopback ip address
-                if node_type != 'host':
-                    self.add_loopback(node_name)
+                
                 
                 self.update_topology()
             
                 print(f'Working on {node_name} switch:')
 
                 if node_type == 'firewall':
+                    if self.file_to_compile == 'firewall':
+                        self.compileWanted = True
                     fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = fw_node
+                    self.compileWanted = False
 
                 elif node_type == 'load-balancer':
+                    if self.file_to_compile == 'load-balancer':
+                        self.compileWanted = True
                     lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = lb_node
+                    self.compileWanted = False
 
                 elif node_type == 'router':
+                    if self.file_to_compile == 'router':
+                        self.compileWanted = True
                     router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = router_node
+                    self.compileWanted = False
 
                 elif node_type == 'router-lw':
-                    lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
+                    if self.file_to_compile == 'router-lw':
+                        self.compileWanted = True
+                    lw_router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = lw_router_node
+                    self.compileWanted = False
                     
                 elif node_type == 'host':
-                    host_node = Host(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
+                    host_node = Host(node_name, node_neighbors, node_inflow, self.topology, False)
                     self.controllers[node_name] = host_node
+
 
                 else:
                     print(f"Invalid type for node: {node_type}")

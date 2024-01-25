@@ -26,7 +26,7 @@ control RIngress(inout headers hdr,
         mark_to_drop(standard_metadata);
     }
 
-    action forward(macAddr_t dstAddr, egressSpec_t port) {
+    action set_nhop(macAddr_t dstAddr, egressSpec_t port) {
 
         //set the src mac address as the previous dst
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
@@ -46,7 +46,7 @@ control RIngress(inout headers hdr,
             hdr.ipv4.dstAddr: exact;
         }
         actions = {
-            forward;
+            set_nhop;
             drop;
         }
         size = 1024;
@@ -54,7 +54,7 @@ control RIngress(inout headers hdr,
     }
 
     apply {
-        if(hdr.ipv4.isValid() && hdr.ipv4.ttl > 1){
+        if(hdr.ipv4.isValid()){
             // Get the number of packet received
             count_t current_count_in;
             num_packet_received.read(current_count_in, (bit<32>)standard_metadata.ingress_port);

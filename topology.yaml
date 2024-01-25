@@ -9,7 +9,7 @@ nodes:
     inflow: s0
   - name: s2
     type: router 
-    neighbors: s1 s3 s4 s5
+    neighbors: s1 s3 s4 s5 h1
     inflow: 
   - name: s3
     type: router 
@@ -35,3 +35,7 @@ nodes:
     type: host
     neighbors: s7
     inflow: 
+  - name: h1
+    type: host
+    neighbors: s2
+    inflow:
