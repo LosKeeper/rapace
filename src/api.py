@@ -4,11 +4,11 @@ import yaml
 from src.equipment.meta_controller import MetaController
 
 class Api(cmd.Cmd, MetaController):
-    def __init__(self, topology_file: str, meta_controller: MetaController):
+    def __init__(self, meta_controller: MetaController):
         cmd.Cmd.__init__(self)
         self.meta_controller = meta_controller
         self.prompt = "rapace_api> "
-        self.topology_file = topology_file+".yaml"
+        self.topology_file = self.meta_controller.file_yaml
         self.topology = self.load_topology()
         
         
@@ -19,6 +19,9 @@ class Api(cmd.Cmd, MetaController):
     
     
     def display_logical_links(self):
+        # Refresh the topology
+        self.topology = self.load_topology()
+        
         print("Logical Links:")
         for node in self.topology['nodes']:
             node_name = node['name']

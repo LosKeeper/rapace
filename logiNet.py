@@ -15,6 +15,6 @@ if __name__ == '__main__':
     
     meta_controller = MetaController(USER_INPUT, args.compile, args.no_compile)
     if args.no_cli:
-        api = Api(USER_INPUT, meta_controller)
+        api = Api(meta_controller)
         api.cmdloop()
     
