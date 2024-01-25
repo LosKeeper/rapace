@@ -1,13 +1,15 @@
 import cmd
 import yaml
+from colorama import init, Fore
 
 from src.equipment.meta_controller import MetaController
 
 class Api(cmd.Cmd, MetaController):
     def __init__(self, meta_controller: MetaController):
         cmd.Cmd.__init__(self)
+        init(autoreset=True)
         self.meta_controller = meta_controller
-        self.prompt = "rapace_api> "
+        self.prompt = f"{Fore.GREEN}RaPaCe-API>{Fore.RESET} "
         self.topology_file = self.meta_controller.file_yaml
         self.topology = self.load_topology()
         
@@ -49,7 +51,7 @@ class Api(cmd.Cmd, MetaController):
 
         # Check if args is empty or if the first argument is "help"
         if not args or (args[0] == "help") or len(args) < 5:
-            print("Usage: add_fw_rule <src_ip> <dst_ip> <protocol> <src_port> <dst_port>")
+            print("Usage: add_fw_rule <src_ip> <dst_ip> <udp | tcp> <src_port> <dst_port>")
             return
 
         firewall = self.meta_controller.get_firewall()
