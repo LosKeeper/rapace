@@ -1,11 +1,14 @@
 import cmd
 import yaml
 
-class Api(cmd.Cmd):
-    def __init__(self, topology_file: str):
+from src.equipment.meta_controller import MetaController
+
+class Api(cmd.Cmd, MetaController):
+    def __init__(self, topology_file: str, meta_controller: MetaController):
         cmd.Cmd.__init__(self)
+        self.meta_controller = meta_controller
         self.prompt = "rapace_api> "
-        self.topology_file = topology_file
+        self.topology_file = topology_file+".yaml"
         self.topology = self.load_topology()
         
         
@@ -46,7 +49,9 @@ class Api(cmd.Cmd):
             print("Usage: add_fw_rule <src_ip> <dst_ip> <protocol> <src_port> <dst_port>")
             return
 
-        print("Adding firewall rule...")
+        firewall = self.meta_controller.get_firewall()
+        firewall.add_rule(args[0], args[1], args[2], int(args[3]), int(args[4]))
+        print(f"Added firewall rule: {args[0]} {args[1]} {args[2]} {args[3]} {args[4]}")
         
         
     def do_set_rate_lb(self, args):
@@ -146,6 +151,3 @@ class Api(cmd.Cmd):
     def do_EOF(self, args):
         return self.do_quit(args)
     
-    
-if __name__ == "__main__":
-    Api('topology.yaml').cmdloop()

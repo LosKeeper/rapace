@@ -229,3 +229,11 @@ class MetaController:
         print("Neighbors:")
         for node_id, controller in self.controllers.items():
             print(f"{node_id}: {self.topology.get_neighbors(node_id)}")
+
+    def get_firewall(self):
+        """Get firewall controller."""
+        for node_id, controller in self.controllers.items():
+            if type(controller).__name__ == 'Firewall':
+                return controller
+        return None
+    
