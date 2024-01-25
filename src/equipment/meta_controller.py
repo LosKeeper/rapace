@@ -13,8 +13,8 @@ class MetaController:
     def __init__(self, user_input: str, file_to_compile: str, compileWanted: bool = True):
         self.user_input = user_input
         self.file_yaml = f'{user_input}.yaml'
-        self.file_json = f'{user_input}.json'
-        self.file_modified_json = f'{user_input}_modified.json'
+        self.file_json = 'topology.json'
+        self.file_2_json = 'topology_2.json'
         self.topology = load_topo(self.file_json)
         self.controllers = {}
         self.file_to_compile = file_to_compile
@@ -26,7 +26,7 @@ class MetaController:
 
     def update_topology(self):
         """Update topology with json file"""
-        self.topology = load_topo(self.file_modified_json)
+        self.topology = load_topo(self.file_2_json)
         
         
     def init_import_logi_topology(self):
@@ -36,7 +36,7 @@ class MetaController:
         with open(self.file_json, 'r') as json_file:
             topology_data = json.load(json_file)
         
-        with open(self.file_modified_json, 'w') as json_file:
+        with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
         with open(self.file_yaml, 'r') as file:
@@ -80,10 +80,9 @@ class MetaController:
                 node_type = node_config.get('type')
                 node_neighbors = node_config.get('neighbors').split()
                 node_inflow = node_config.get('inflow')
-            
-                print(f'Working on {node_name} switch:')
 
                 if node_type == 'firewall':
+                    print(f'Firewall: on {node_name} node')
                     if self.file_to_compile == 'firewall':
                         self.compileWanted = True
                     fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
@@ -91,6 +90,7 @@ class MetaController:
                     self.compileWanted = False
 
                 elif node_type == 'load-balancer':
+                    print(f'Load-balance: on {node_name} node')
                     if self.file_to_compile == 'load-balancer':
                         self.compileWanted = True
                     lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
@@ -98,6 +98,7 @@ class MetaController:
                     self.compileWanted = False
 
                 elif node_type == 'router':
+                    print(f'Router: on {node_name} node')
                     if self.file_to_compile == 'router':
                         self.compileWanted = True
                     router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
@@ -105,6 +106,7 @@ class MetaController:
                     self.compileWanted = False
 
                 elif node_type == 'router-lw':
+                    print(f'Router: on {node_name} node')
                     if self.file_to_compile == 'router-lw':
                         self.compileWanted = True
                     lw_router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
@@ -122,21 +124,21 @@ class MetaController:
         
     def add_loopback(self, node_name: str):
         """Add loopback ip address"""
-        with open(self.file_modified_json, 'r') as json_file:
+        with open(self.file_2_json, 'r') as json_file:
             topology_data = json.load(json_file)
             
         node_config = topology_data.get('nodes', [])
         
         node_config = [node for node in node_config if node['id'] == node_name][0]
-        node_config['loopback'] = "127.0.0."+str(int(node_name.split('s')[1]) + 1)
+        node_config['loopback'] = "127.0.0."+str(int(node_name.split('s')[1]))
         
-        with open(self.file_modified_json, 'w') as json_file:
+        with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
                     
 
     def add_node(self, name: str):
         """Add a node in the topology json file"""
-        with open(self.file_modified_json, 'r') as json_file:
+        with open(self.file_2_json, 'r') as json_file:
             topology_data = json.load(json_file)
                 
         with open(self.file_json, 'r') as json_file:
@@ -151,12 +153,12 @@ class MetaController:
         
         topology_data.setdefault('nodes', []).append(node_config)
 
-        with open(self.file_modified_json, 'w') as json_file:
+        with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
 
     def remove_node(self, name):
         """Remove a node in the topology json file"""
-        with open(self.file_modified_json, 'r') as json_file:
+        with open(self.file_2_json, 'r') as json_file:
             topology_data = json.load(json_file)
 
         existing_nodes = [node['id'] for node in topology_data.get('nodes', [])]
@@ -166,13 +168,13 @@ class MetaController:
         topology_data['nodes'] = [node for node in topology_data['nodes'] if node['id'] != name]
         topology_data['links'] = [link for link in topology_data['links'] if link['node1'] != name and link['node2'] != name]
 
-        with open(self.file_modified_json, 'w') as json_file:
+        with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
             
     def add_link(self, node1: str, node2: str):
         """Add a link between node1 and node2 in the topology json file"""
-        with open(self.file_modified_json, 'r') as json_file:
+        with open(self.file_2_json, 'r') as json_file:
             topology_data = json.load(json_file)
                 
         with open(self.file_json, 'r') as json_file:
@@ -189,12 +191,12 @@ class MetaController:
         if link is not None:
             topology_data.setdefault('links', []).append(link)
 
-        with open(self.file_modified_json, 'w') as json_file:
+        with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
     def remove_link(self, node1: str, node2: str):
         """Remove the link between node1 and node2 in the topology json file"""
-        with open(self.file_modified_json, 'r') as json_file:
+        with open(self.file_2_json, 'r') as json_file:
             topology_data = json.load(json_file)
 
         link_index = None
@@ -206,7 +208,7 @@ class MetaController:
 
         if link_index is not None:  
             removed_link = topology_data['links'].pop(link_index)
-            with open(self.file_modified_json, 'w') as json_file:
+            with open(self.file_2_json, 'w') as json_file:
                 json.dump(topology_data, json_file, indent=2)
                 
                 
@@ -256,14 +258,14 @@ class MetaController:
             yaml.dump(config_data, file, indent=2)
             
         # Update the json file
-        with open(self.file_modified_json, 'r') as json_file:
+        with open(self.file_2_json, 'r') as json_file:
             topology_data = json.load(json_file)
             
         for node_config in topology_data.get('nodes', []):
             if node_config.get('id') == node_name:
                 node_config['type'] = equipment
                 
-        with open(self.file_modified_json, 'w') as json_file:
+        with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
         # Update the topology

@@ -4,5 +4,6 @@ p4src/*.txt
 p4src/*.json
 log/
 pcap/
+tcpdump/
 __pycache__/
 *.json
