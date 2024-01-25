@@ -34,6 +34,7 @@ class MetaController:
         
         with open(self.file_yaml, 'r') as file:
             config_data = yaml.safe_load(file)
+            nodes = []
             
             for node_config in config_data.get('nodes', []):
                 node_name = node_config.get('name')
@@ -67,19 +68,73 @@ class MetaController:
                     self.controllers[node_name] = lw_router_node
                     
                 elif node_type == 'host':
-                    pass
+                    host_node = Host(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
+                    self.controllers[node_name] = host_node
 
                 else:
                     print(f"Invalid type for node: {node_type}")
                     exit(1)
                     
+                nodes.append(node_name)
+                
+        for node in self.topology.get_nodes():
+            if node not in nodes:
+                self.remove_node(node)
+                
+        self.update_topology()
+        
+        print('Logical topology imported successfully!')
+                    
+
+    def add_node(self, name: str, isP4Switch: bool, isSwitch: bool):
+        """Add a node in the topology json file"""
+        with open(self.file_json, 'r') as json_file:
+            topology_data = json.load(json_file)
+
+        # Check if the node already exists
+        existing_nodes = [node['id'] for node in topology_data.get('nodes', [])]
+        if name in existing_nodes:
+            return
+
+        new_node = {
+            "cls": null,
+            "isP4Switch": f"{isP4Switch}",
+            "isSwitch": f"{isSwitch}",
+            "device_id": 1,
+            "pcap_dump": true,
+            "pcap_dir": "./pcap",
+            "log_enabled": true,
+            "log_dir": "./log",
+            "thrift_port": 9090,
+            "id": f"{name}"
+        }
+
+        topology_data.setdefault('nodes', []).append(new_node)
+
+        with open(self.file_json, 'w') as json_file:
+            json.dump(topology_data, json_file, indent=2)
+
+    def remove_node(self, name):
+        """Remove a node in the topology json file"""
+        with open(self.file_json, 'r') as json_file:
+            topology_data = json.load(json_file)
+
+        existing_nodes = [node['id'] for node in topology_data.get('nodes', [])]
+        if name not in existing_nodes:
+            return
+
+        topology_data['nodes'] = [node for node in topology_data['nodes'] if node['id'] != name]
+        topology_data['links'] = [link for link in topology_data['links'] if link['node1'] != name and link['node2'] != name]
+
+        with open(self.file_json, 'w') as json_file:
+            json.dump(topology_data, json_file, indent=2)
+            
             
     def add_link(self, node1: str, node2: str):
         """Add a link between node1 and node2 in the topology json file"""
         with open(self.file_json, 'r') as json_file:
             topology_data = json.load(json_file)
             
-        # check if the link already exists
         existing_links = topology_data.get('links', [])
         for link in existing_links:
             if (link['node1'] == node1 and link['node2'] == node2) or \
