@@ -129,21 +129,88 @@ class Api(cmd.Cmd, MetaController):
     def do_remove_link(self, args):
         # Check for arguments
         args = args.split()
-        if not args or (args[0] == "help") or len(args) != 1:
-            print("Usage: remove_link <link>")
+        if not args or (args[0] == "help") or len(args) != 2:
+            print("Usage: remove_link <node1> <node2>")
             return
         
-        print("Removing link...")
+        # Check if link exists
+        for node in self.topology['nodes']:
+            if node['name'] == args[0]:
+                if args[1] not in node['neighbors'].split():
+                    print(f"Link between {args[0]} and {args[1]} does not exist")
+                    return
+            elif node['name'] == args[1]:
+                if args[0] not in node['neighbors'].split():
+                    print(f"Link between {args[0]} and {args[1]} does not exist")
+                    return
+        
+        # Remove link from topology yaml file
+        with open(self.topology_file, 'w') as file:
+            yaml.dump(self.topology, file)
+            
+        for node in self.topology['nodes']:
+            if node['name'] == args[0]:
+                node['neighbors'] = node['neighbors'].replace(args[1], '')
+            elif node['name'] == args[1]:
+                node['neighbors'] = node['neighbors'].replace(args[0], '')
+                
+        with open(self.topology_file, 'w') as file:
+            yaml.dump(self.topology, file)
+            
+        # Update topology
+        self.meta_controller.update_topology()
+        
+        # Remove link from the controller
+        self.meta_controller.remove_link(args[0], args[1])
+        
+        # Reset all tables to recalculate shortest path
+        self.meta_controller.import_logi_topology()
+        
+        print(f"Removed link between {args[0]} and {args[1]} and restarted controllers")
 
     
     def do_add_link(self, args):
         # Check for arguments
         args = args.split()
-        if not args or (args[0] == "help") or len(args) != 1:
-            print("Usage: add_link <link>")
+        if not args or (args[0] == "help") or len(args) != 2:
+            print("Usage: add_link <node1> <node2>")
             return
         
-        print("Adding link...")
+        # Check if link already exists
+        for node in self.topology['nodes']:
+            if node['name'] == args[0]:
+                if args[1] in node['neighbors'].split():
+                    print(f"Link between {args[0]} and {args[1]} already exists")
+                    return
+            elif node['name'] == args[1]:
+                if args[0] in node['neighbors'].split():
+                    print(f"Link between {args[0]} and {args[1]} already exists")
+                    return
+        
+        # Add link to the topoly yaml file
+        with open(self.topology_file, 'w') as file:
+            yaml.dump(self.topology, file)
+            
+        for node in self.topology['nodes']:
+            if node['name'] == args[0]:
+                node['neighbors'] = node['neighbors']+' '+str(args[1])
+            elif node['name'] == args[1]:
+                node['neighbors'] = node['neighbors']+' '+str(args[0])
+                
+        with open(self.topology_file, 'w') as file:
+            yaml.dump(self.topology, file)
+        
+        # Update topology
+        self.meta_controller.update_topology()
+        
+        # Add link to the controller
+        self.meta_controller.add_link(args[0], args[1])
+        
+        # Reset all tables to recalculate shortest path
+        self.meta_controller.import_logi_topology()
+        
+        print(f"Added link between {args[0]} and {args[1]} and restarted controllers")
+
 
 
     def do_quit(self, args):
