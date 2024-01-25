@@ -1,7 +1,7 @@
 nodes:
 - inflow: null
   name: s0
-  neighbors: s1
+  neighbors: s1 s7
   type: firewall
 - inflow: s0
   name: s1
@@ -9,11 +9,11 @@ nodes:
   type: load-balancer
 - inflow: null
   name: s2
-  neighbors: s1 s3 s4 s5 h1
+  neighbors: s1  s4 s5 h2
   type: router
 - inflow: null
   name: s3
-  neighbors: s1 s2 s4 s6
+  neighbors: s1  s4 s6
   type: router
 - inflow: null
   name: s4
@@ -29,13 +29,13 @@ nodes:
   type: router-lw
 - inflow: null
   name: s7
-  neighbors: s5 s6 h0
+  neighbors: s5 s6 h1 s0
   type: router
 - inflow: null
-  name: h0
+  name: h1
   neighbors: s7
   type: host
 - inflow: null
-  name: h1
+  name: h2
   neighbors: s2
   type: host
