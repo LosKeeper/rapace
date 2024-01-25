@@ -19,14 +19,11 @@ class Firewall(Controller):
         for rule in self.rules:
             self.add_rule(rule)
 
-    def add_rule(self, flow: str):
+    def add_rule(self, srcAddr: str, dstAddr: str, protocol: str, srcPort: str, dstPort: str):
         """Implement method to add firewall rule"""
-        entry = TableEntry("firewall")
-        entry.match["hdr.ipv4.srcAddr"] = flow.split(",")[0]
-        entry.match["hdr.ipv4.dstAddr"] = flow.split(",")[1]
-        entry.match["hdr.ipv4.protocol"] = int(flow.split(",")[2])
-        entry.match["hdr.tcp.srcPort"] = int(flow.split(",")[3])
-        entry.match["hdr.tcp.dstPort"] = int(flow.split(",")[4])
-        entry.action = "drop"
-        self.api.table_add(entry)
-        self.rules.append(flow)
+        # Convert protocol to hex
+        protocol = "0x6" if protocol == "tcp" else "0x11"
+        
+        # Add rule to firewall table
+        self.api.table_add("filter_table", "drop", [srcAddr,dstAddr, protocol, hex(int(srcPort)), hex(int(dstPort))])
+        self.rules.append([srcAddr,dstAddr, protocol, srcPort, dstPort])

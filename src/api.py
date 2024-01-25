@@ -1,11 +1,16 @@
 import cmd
 import yaml
+from colorama import init, Fore
 
-class Api(cmd.Cmd):
-    def __init__(self, topology_file: str):
+from src.equipment.meta_controller import MetaController
+
+class Api(cmd.Cmd, MetaController):
+    def __init__(self, meta_controller: MetaController):
         cmd.Cmd.__init__(self)
-        self.prompt = "rapace_api> "
-        self.topology_file = topology_file
+        init(autoreset=True)
+        self.meta_controller = meta_controller
+        self.prompt = f"{Fore.GREEN}RaPaCe-API>{Fore.RESET} "
+        self.topology_file = self.meta_controller.file_yaml
         self.topology = self.load_topology()
         
         
@@ -16,6 +21,9 @@ class Api(cmd.Cmd):
     
     
     def display_logical_links(self):
+        # Refresh the topology
+        self.topology = self.load_topology()
+        
         print("Logical Links:")
         for node in self.topology['nodes']:
             node_name = node['name']
@@ -43,10 +51,12 @@ class Api(cmd.Cmd):
 
         # Check if args is empty or if the first argument is "help"
         if not args or (args[0] == "help") or len(args) < 5:
-            print("Usage: add_fw_rule <src_ip> <dst_ip> <protocol> <src_port> <dst_port>")
+            print("Usage: add_fw_rule <src_ip> <dst_ip> <udp | tcp> <src_port> <dst_port>")
             return
 
-        print("Adding firewall rule...")
+        firewall = self.meta_controller.get_firewall()
+        firewall.add_rule(args[0], args[1], args[2], int(args[3]), int(args[4]))
+        print(f"Added firewall rule: {args[0]} {args[1]} {args[2]} {args[3]} {args[4]}")
         
         
     def do_set_rate_lb(self, args):
@@ -82,7 +92,8 @@ class Api(cmd.Cmd):
             print("Usage: swap <node_id> <equipment> [args]")
             return
 
-        print("Swapping...")
+        self.meta_controller.swap_node(args[0], args[1])
+        print(f"Swapped {args[0]} with {args[1]}")
 
         
     def do_see(self, args):
@@ -146,6 +157,3 @@ class Api(cmd.Cmd):
     def do_EOF(self, args):
         return self.do_quit(args)
     
-    
-if __name__ == "__main__":
-    Api('topology.yaml').cmdloop()
