@@ -1,15 +1,13 @@
 nodes:
-  - name: s1
-    type: router
-    neighbors: h1 h2
-    inflow:
-
-  - name: h1
-    type: host
-    neighbors: s1
-    inflow:
-
-  - name: h2
-    type: host
-    neighbors: s1
-    inflow:
+- inflow: null
+  name: s1
+  neighbors: h1 h2
+  type: router
+- inflow: null
+  name: h1
+  neighbors: s1
+  type: host
+- inflow: null
+  name: h2
+  neighbors: s1
+  type: host

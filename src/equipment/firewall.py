@@ -14,10 +14,10 @@ class Firewall(Controller):
 
     def init_table(self):
         """Implement firewall table initialization"""
-        # ...
+        self.api.table_clear("filter_table")
                 
         for rule in self.rules:
-            self.add_rule(rule)
+            self.add_rule(rule[0], rule[1], rule[2], rule[3], rule[4])
 
     def add_rule(self, srcAddr: str, dstAddr: str, protocol: str, srcPort: str, dstPort: str):
         """Implement method to add firewall rule"""

@@ -283,3 +283,9 @@ class MetaController:
         else:
             print(f"Invalid type for node: {node_type}")
             
+    def reset_all_tables(self):
+        """Reset all tables of all controllers"""
+        for node_id, controller in self.controllers.items():
+            print(f"Resetting tables of {node_id}...")
+            controller.init_table()
+        

@@ -92,7 +92,12 @@ class Api(cmd.Cmd, MetaController):
             print("Usage: swap <node_id> <equipment> [args]")
             return
 
+        # Swap node
         self.meta_controller.swap_node(args[0], args[1])
+        
+        # Reset all tables to recalculate shortest path
+        self.meta_controller.reset_all_tables()      
+        
         print(f"Swapped {args[0]} with {args[1]}")
 
         
@@ -164,7 +169,7 @@ class Api(cmd.Cmd, MetaController):
         self.meta_controller.remove_link(args[0], args[1])
         
         # Reset all tables to recalculate shortest path
-        self.meta_controller.import_logi_topology()
+        self.meta_controller.reset_all_tables()
         
         print(f"Removed link between {args[0]} and {args[1]} and restarted controllers")
 
@@ -207,7 +212,7 @@ class Api(cmd.Cmd, MetaController):
         self.meta_controller.add_link(args[0], args[1])
         
         # Reset all tables to recalculate shortest path
-        self.meta_controller.import_logi_topology()
+        self.meta_controller.reset_all_tables()
         
         print(f"Added link between {args[0]} and {args[1]} and restarted controllers")
 
