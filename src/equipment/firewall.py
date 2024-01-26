@@ -22,8 +22,8 @@ class Firewall(Controller):
     def add_rule(self, srcAddr: str, dstAddr: str, protocol: str, srcPort: str, dstPort: str):
         """Implement method to add firewall rule"""
         # Convert protocol to hex
-        protocol = "0x6" if protocol == "tcp" else "0x11"
+        protocol_hex = "0x6" if protocol == "tcp" else "0x11"
         
         # Add rule to firewall table
-        self.api.table_add("filter_table", "drop", [srcAddr,dstAddr, protocol, hex(int(srcPort)), hex(int(dstPort))])
+        self.api.table_add("filter_table", "drop", [srcAddr,dstAddr, protocol_hex, hex(int(srcPort)), hex(int(dstPort))])
         self.rules.append([srcAddr,dstAddr, protocol, srcPort, dstPort])
