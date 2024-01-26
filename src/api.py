@@ -17,43 +17,44 @@ class Api(cmd.Cmd, MetaController):
         self.topology = None
         self.load_topology()
         
+        
     def generate_graph(self, output_file="graph.png"):
-        # Refresh the topology
-        self.load_topology()
-
-        # Load the topology json file
-        with open(self.meta_controller.file_json, 'r') as file:
-            json = yaml.safe_load(file)
+        # Load the topology yaml file
+        with open(self.topology_file, 'r') as file:
+            topology_data = yaml.safe_load(file)
 
         # Create a directed or undirected graph
-        if json.get("directed", False):
-            G = nx.DiGraph()
-        else:
-            G = nx.Graph()
+        G = nx.Graph()
 
         # Add nodes to the graph with color attributes
         node_colors = []
-        for node in json['nodes']:
-            node_id = node['id']
-            is_switch = node.get('isSwitch', False)
-            is_host = node.get('isHost', False)
+        for node in topology_data['nodes']:
+            node_id = node['name'].split()[0]
+            node_type = node['type'].split()[0]
 
-            if is_switch:
-                G.add_node(node_id)
-                node_colors.append('red')
-            elif is_host:
-                G.add_node(node_id)
+            if node_type == 'host':
+                G.add_node(node_id, color='green')
                 node_colors.append('green')
             else:
-                G.add_node(node_id)
-                node_colors.append('gray')
+                G.add_node(node_id, color='red')
+                node_colors.append('red')
 
-        # Add edges to the graph
-        for link in json['links']:
-            G.add_edge(link['source'], link['target'])
+        added_edges = set()  
+        for node in topology_data['nodes']:
+            node_id = node['name'].split()[0]
+            neighbors = node['neighbors'].split()
+            for neighbor in neighbors:
+                edge = tuple(sorted([node_id, neighbor]))
+                if edge not in added_edges: 
+                    G.add_edge(node_id, neighbor)
+                    added_edges.add(edge)
 
-        # Draw the graph with node colors
+        # Draw the graph with node colors and specified node shape
         pos = nx.spring_layout(G)
+        
+        # Clear the current figure (prevents overlapping graphs)
+        plt.clf()
+        
         nx.draw(
             G,
             pos,
@@ -63,7 +64,8 @@ class Api(cmd.Cmd, MetaController):
             node_color=node_colors,
             font_size=8,
             font_color='black',
-            edge_color='black'
+            edge_color='black',
+            node_shape='o' 
         )
 
         # Save the graph as an image file
@@ -71,7 +73,6 @@ class Api(cmd.Cmd, MetaController):
         plt.savefig(output_path, format="png")
 
         print(f"Topology graph saved as {output_file}")
-
         
         
     def load_topology(self):
@@ -232,7 +233,7 @@ class Api(cmd.Cmd, MetaController):
         # Reset all tables to recalculate shortest path
         self.meta_controller.reset_all_tables()
         
-        print(f"Removed link between {args[0]} and {args[1]} and restarted controllers")
+        print(f"Removed link between {args[0]} and {args[1]} and reset tables to recalculate shortest path")
 
     
     def do_add_link(self, args):
@@ -275,7 +276,7 @@ class Api(cmd.Cmd, MetaController):
         # Reset all tables to recalculate shortest path
         self.meta_controller.reset_all_tables()
         
-        print(f"Added link between {args[0]} and {args[1]} and restarted controllers")
+        print(f"Added link between {args[0]} and {args[1]} and reset tables to recalculate shortest path")
 
 
 
