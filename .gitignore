@@ -7,3 +7,4 @@ pcap/
 tcpdump/
 __pycache__/
 *.json
+*.png

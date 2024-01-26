@@ -1,6 +1,9 @@
 import cmd
 import yaml
 from colorama import init, Fore
+import networkx as nx
+import matplotlib.pyplot as plt
+import os
 
 from src.equipment.meta_controller import MetaController
 
@@ -11,18 +14,75 @@ class Api(cmd.Cmd, MetaController):
         self.meta_controller = meta_controller
         self.prompt = f"{Fore.GREEN}RaPaCe-API>{Fore.RESET} "
         self.topology_file = self.meta_controller.file_yaml
-        self.topology = self.load_topology()
+        self.topology = None
+        self.load_topology()
+        
+    def generate_graph(self, output_file="graph.png"):
+        # Refresh the topology
+        self.load_topology()
+
+        # Load the topology json file
+        with open(self.meta_controller.file_json, 'r') as file:
+            json = yaml.safe_load(file)
+
+        # Create a directed or undirected graph
+        if json.get("directed", False):
+            G = nx.DiGraph()
+        else:
+            G = nx.Graph()
+
+        # Add nodes to the graph with color attributes
+        node_colors = []
+        for node in json['nodes']:
+            node_id = node['id']
+            is_switch = node.get('isSwitch', False)
+            is_host = node.get('isHost', False)
+
+            if is_switch:
+                G.add_node(node_id)
+                node_colors.append('red')
+            elif is_host:
+                G.add_node(node_id)
+                node_colors.append('green')
+            else:
+                G.add_node(node_id)
+                node_colors.append('gray')
+
+        # Add edges to the graph
+        for link in json['links']:
+            G.add_edge(link['source'], link['target'])
+
+        # Draw the graph with node colors
+        pos = nx.spring_layout(G)
+        nx.draw(
+            G,
+            pos,
+            with_labels=True,
+            font_weight='bold',
+            node_size=700,
+            node_color=node_colors,
+            font_size=8,
+            font_color='black',
+            edge_color='black'
+        )
+
+        # Save the graph as an image file
+        output_path = os.path.join(os.getcwd(), output_file)
+        plt.savefig(output_path, format="png")
+
+        print(f"Topology graph saved as {output_file}")
+
         
         
     def load_topology(self):
         with open(self.topology_file, 'r') as file:
             topology = yaml.safe_load(file)
-        return topology
+        self.topology = topology
     
     
     def display_logical_links(self):
         # Refresh the topology
-        self.topology = self.load_topology()
+        self.load_topology()
         
         print("Logical Links:")
         for node in self.topology['nodes']:
@@ -110,6 +170,7 @@ class Api(cmd.Cmd, MetaController):
         
         if args[0] == "topology":
             self.display_logical_links()
+            self.generate_graph()
         elif args[0] == "filters":
             print("Seeing filters...")
         elif args[0] == "load":
