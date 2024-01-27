@@ -12,7 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('--no-cli', action='store_true', help='Do not start the CLI for the API')
     args = parser.parse_args()
     
-    meta_controller = MetaController(args.input, args.compile, not args.no_compile)
+    meta_controller = MetaController(args.input.split('.')[0], args.compile, not args.no_compile)
     if not args.no_cli:
         api = Api(meta_controller)
         api.cmdloop()
