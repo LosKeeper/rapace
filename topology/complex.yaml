@@ -1,41 +1,49 @@
 nodes:
   - name: s1
-    type: firewall
-    neighbors: s2 h2
+    type: router
+    neighbors: s2 h1
     inflow: 
   - name: s2
-    type: load-balancer
-    neighbors: s1 s3 s4
-    inflow: s1
-  - name: s3
-    type: router 
-    neighbors: s2 s4 s5 s6 
+    type: firewall
+    neighbors: s1 s3
     inflow: 
+  - name: s3
+    type: load-balancer
+    neighbors: s2 s4 s5
+    inflow: s2
   - name: s4
     type: router 
-    neighbors: s2 s3 s5 s7
+    neighbors: s3 s5 s6 s7
     inflow: 
   - name: s5
-    type: router-lw 
-    neighbors: s3 s4 s6 s7
+    type: router 
+    neighbors: s3 s4 s6 s8
     inflow: 
   - name: s6
-    type: router-lw 
-    neighbors: s3 s5 s7 s8
+    type: router
+    neighbors: s4 s5 s7 s8
     inflow: 
   - name: s7
-    type: router-lw 
-    neighbors: s4 s5 s6 s8
+    type: router
+    neighbors: s4 s6 s8 s9
     inflow: 
   - name: s8
-    type: router 
-    neighbors: s6 s7 h1
+    type: router
+    neighbors: s5 s6 s7 s9
     inflow: 
+  - name: s9
+    type: router
+    neighbors: s7 s8 s10
+    inflow: 
+  - name: s10
+    type: router
+    neighbors: s9 h2
+    inflow:
   - name: h1
     type: host
-    neighbors: s8
+    neighbors: s1
     inflow: 
   - name: h2
     type: host
-    neighbors: s1
+    neighbors: s10
     inflow:

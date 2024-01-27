@@ -3,6 +3,7 @@ from p4utils.utils.topology import NetworkGraph
 from typing import List
 
 from src.equipment.controller import Controller
+from src.equipment.router import RouterController
 
 class RouterLWController(RouterController):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph, compileWanted: bool) -> None:

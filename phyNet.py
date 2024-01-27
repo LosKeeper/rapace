@@ -17,7 +17,7 @@ if __name__ == '__main__':
         switchNb=4
         hostNb=2
     elif args.complex:
-        switchNb=8
+        switchNb=10
         hostNb=2
     
     net = NetworkAPI()
@@ -47,8 +47,8 @@ if __name__ == '__main__':
         net.addLink('s1','h1')
         net.addLink('s4','h2')
     elif args.complex:
-        net.addLink('s1','h2')
-        net.addLink('s8','h1')
+        net.addLink('s1','h1')
+        net.addLink('s10','h2')
 
     # Assignment strategy
     if args.layer == 2:
