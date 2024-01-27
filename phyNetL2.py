@@ -6,7 +6,7 @@ net = NetworkAPI()
 net.setLogLevel('info')
 net.setCompiler(p4rt=True)
 
-NB_S = 2
+NB_S = 3
 
 # Create N switches
 for i in range(1, NB_S):
@@ -21,7 +21,7 @@ for i in range(1, NB_S):
 net.addHost('h1')
 net.addHost('h2')
 net.addLink('s1','h1')
-net.addLink('s1','h2')
+net.addLink('s2','h2')
 
 # Assignment strategy
 net.l2()
