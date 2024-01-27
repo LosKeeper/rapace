@@ -7,6 +7,9 @@
 #include "include/parser.p4"
 #include "include/checksum.p4"
 
+#define IP_ICMP_PROTO 1
+#define ICMP_TTL_EXPIRED 11
+
 /********** Ingress control **********/
 control RIngress(inout headers hdr,
                   inout metadata meta,
@@ -46,6 +49,10 @@ control RIngress(inout headers hdr,
         total_packets.write(0, tmp + 1);
     }
 
+    action set_src_icmp_ip (bit<32> src_ip){
+        hdr.ipv4_icmp.srcAddr = src_ip;
+    }
+
     table ipv4_lpm {
         key = {
             hdr.ipv4.dstAddr: lpm;
@@ -59,10 +66,59 @@ control RIngress(inout headers hdr,
         default_action = drop;
     }
 
+    table icmp_ingress_port {
+        key = {
+            standard_metadata.ingress_port: exact;
+        }
+
+        actions = {
+            set_src_icmp_ip;
+            NoAction;
+        }
+        size=64;
+        default_action=NoAction;
+    }
+
     apply {
-        if(hdr.ipv4.isValid()){
-            // apply tables
+        if(hdr.ipv4.isValid() && hdr.ipv4.ttl > 1){
+            // Forward packet
             ipv4_lpm.apply();
+        }
+        else if (hdr.ipv4.isValid() && hdr.tcp.isValid() && hdr.ipv4.ttl == 1) {
+
+            // Set new headers valid
+            hdr.ipv4_icmp.setValid();
+            hdr.icmp.setValid();
+
+            // Set egress port == ingress port
+            standard_metadata.egress_spec = standard_metadata.ingress_port;
+
+            //Ethernet: Swap map addresses
+            bit<48> tmp_mac = hdr.ethernet.srcAddr;
+            hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+            hdr.ethernet.dstAddr = tmp_mac;
+
+            //Building new Ipv4 header for the ICMP packet
+            //Copy original header (for simplicity)
+            hdr.ipv4_icmp = hdr.ipv4;
+            //Set destination address as traceroute originator
+            hdr.ipv4_icmp.dstAddr = hdr.ipv4.srcAddr;
+            //Set src IP to the IP assigned to the switch interface
+            icmp_ingress_port.apply();
+
+            //Set protocol to ICMP
+            hdr.ipv4_icmp.protocol = IP_ICMP_PROTO;
+            //Set default TTL
+            hdr.ipv4_icmp.ttl = 64;
+            //And IP Length to 56 bytes (normal IP header + ICMP + 8 bytes of data)
+            hdr.ipv4_icmp.totalLen= 56;
+
+            //Create ICMP header with
+            hdr.icmp.type = ICMP_TTL_EXPIRED;
+            hdr.icmp.code = 0;
+
+            //make sure all the packets are length 70.. so wireshark does not complain when tpc options,etc
+            truncate((bit<32>)70);
         }
     }
 }

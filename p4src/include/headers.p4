@@ -58,8 +58,17 @@ header udp_t {
     bit<16> checksum;
 }
 
+header icmp_t {
+   bit<8> type;
+   bit<8> code;
+   bit<16> checksum;
+   bit<32> unused;
+}
+
 struct headers {
     ethernet_t ethernet;
+    ipv4_t ipv4_icmp;
+    icmp_t icmp;
     ipv4_t ipv4;
     tcp_t tcp;
     udp_t udp;
