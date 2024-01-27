@@ -112,14 +112,13 @@ class MetaController:
                     print(f'Router: on {node_name} node')
                     if self.file_to_compile == 'router-lw':
                         self.compileWanted = True
-                    lw_router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
+                    lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = lw_router_node
                     if self.file_to_compile == 'router-lw':
                         self.compileWanted = False
                     
                 elif node_type == 'host':
-                    host_node = Host(node_name, node_neighbors, node_inflow, self.topology, False)
-                    self.controllers[node_name] = host_node
+                    pass
 
                 else:
                     print(f"Invalid type for node: {node_type}")

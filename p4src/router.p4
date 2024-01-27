@@ -26,17 +26,27 @@ control RIngress(inout headers hdr,
         mark_to_drop(standard_metadata);
     }
 
-    action set_nhop(macAddr_t dstAddr, egressSpec_t port) {
-        //set the src mac address as the previous dst
+    action set_nhop_host(macAddr_t dstAddr, egressSpec_t port) {
+        // swap mac addresses for the packet to go back to the host
+
+        // set the destination mac address with the source mac address from the packet
         hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
 
-        //set the destination mac address that we got from the match in the table
+        // set the source mac address with the one we get from the table 
         hdr.ethernet.srcAddr = dstAddr;
 
-        //set the output port that we also get from the table
+        // set the output port that we also get from the table
         standard_metadata.egress_spec = port;
 
-        //decrease ttl by 1
+        // decrease ttl by 1
+        hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+    }
+
+    action set_nhop_router(egressSpec_t port) {
+        // set the output port that we also get from the table
+        standard_metadata.egress_spec = port;
+
+        // decrease ttl by 1
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
 
@@ -45,7 +55,8 @@ control RIngress(inout headers hdr,
             hdr.ipv4.dstAddr: lpm;
         }
         actions = {
-            set_nhop;
+            set_nhop_host;
+            set_nhop_router;
             drop;
         }
         size = 1024;
@@ -97,7 +108,6 @@ control RComputeChecksum(inout headers hdr, inout metadata meta) {
                 hdr.ipv4.hdrChecksum,
                 HashAlgorithm.csum16);
     }
-        
 }
 
 

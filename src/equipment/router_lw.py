@@ -4,10 +4,9 @@ from typing import List
 
 from src.equipment.controller import Controller
 
-class RouterLWController(Controller):
+class RouterLWController(RouterController):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph, compileWanted: bool) -> None:
         super().__init__(name, neighbors, inflow, topology, compileWanted)
-        # Add specific attributes for lightweight router controller
         self.compile('p4src/router-lw.p4')
         self.flash('p4src/router-lw.json')
     
