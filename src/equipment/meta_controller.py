@@ -19,7 +19,7 @@ class MetaController:
         self.controllers = {}
         self.file_to_compile = file_to_compile
         self.compileWanted = compileWanted
-        if file_to_compile != "":
+        if file_to_compile != "" and file_to_compile is not None:
             self.compileWanted = False
         self.init_import_logi_topology()
         self.import_logi_topology()
@@ -87,7 +87,8 @@ class MetaController:
                         self.compileWanted = True
                     fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = fw_node
-                    self.compileWanted = False
+                    if self.file_to_compile == 'firewall':
+                        self.compileWanted = False
 
                 elif node_type == 'load-balancer':
                     print(f'Load-balance: on {node_name} node')
@@ -95,7 +96,8 @@ class MetaController:
                         self.compileWanted = True
                     lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = lb_node
-                    self.compileWanted = False
+                    if self.file_to_compile == 'load-balancer':
+                        self.compileWanted = False
 
                 elif node_type == 'router':
                     print(f'Router: on {node_name} node')
@@ -103,7 +105,8 @@ class MetaController:
                         self.compileWanted = True
                     router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = router_node
-                    self.compileWanted = False
+                    if self.file_to_compile == 'router':
+                        self.compileWanted = False
 
                 elif node_type == 'router-lw':
                     print(f'Router: on {node_name} node')
@@ -111,7 +114,8 @@ class MetaController:
                         self.compileWanted = True
                     lw_router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
                     self.controllers[node_name] = lw_router_node
-                    self.compileWanted = False
+                    if self.file_to_compile == 'router-lw':
+                        self.compileWanted = False
                     
                 elif node_type == 'host':
                     host_node = Host(node_name, node_neighbors, node_inflow, self.topology, False)
