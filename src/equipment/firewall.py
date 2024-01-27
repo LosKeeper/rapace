@@ -37,3 +37,13 @@ class Firewall(Controller):
         # Add rule to firewall table
         self.api.table_add("filter_table", "drop", [srcAddr,dstAddr, protocol_hex, hex(int(srcPort)), hex(int(dstPort))])
         self.rules.append([srcAddr,dstAddr, protocol, srcPort, dstPort])
+        
+    def get_total_packets_nb(self):
+        """Retrieve the number of packets received on the firewall"""
+        return self.api.register_read("total_packets", 0)
+    
+    def get_filtered_packets_nb(self):
+        """Retrieve the number of packets received on the firewall"""
+        return self.api.register_read("filtered_packets", 0)
+    
+    

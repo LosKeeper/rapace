@@ -34,10 +34,13 @@ control RIngress(inout headers hdr,
         total_packets.write(0, tmp + 1);
     }
 
-    action set_nhop_router(egressSpec_t port) {
+    action set_nhop_router(macAddr_t dstAddr, egressSpec_t port) {
+        // set the source mac address with the previous destination mac adddress
+        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+        // set the destination mac address with the one we get from the table
+        hdr.ethernet.dstAddr = dstAddr;
         // set the output port that we also get from the table
         standard_metadata.egress_spec = port;
-
         // decrease ttl by 1
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
 

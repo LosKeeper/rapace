@@ -4,6 +4,7 @@ from colorama import init, Fore
 import networkx as nx
 import matplotlib.pyplot as plt
 import os
+import copy
 
 from src.equipment.meta_controller import MetaController
 
@@ -173,11 +174,16 @@ class Api(cmd.Cmd, MetaController):
             self.display_logical_links()
             self.generate_graph()
         elif args[0] == "filters":
-            print("Seeing filters...")
+            fws_packets = self.meta_controller.get_filtered_packets_nb()
+            print(f"Number of packets filtered by firewalls: {fws_packets}")
         elif args[0] == "load":
-            print("Seeing load...")
+            nodes_packets = self.meta_controller.get_total_packets_nb()
+            print("Number of packets received per equipment: ")
+            for node_packets in nodes_packets:
+                print(f"- on {node_packets[0]}: {node_packets[1]} packets received")
         elif args[0] == "tunnelled":
-            print("Seeing tunnelled...")
+            routers_packets = self.meta_controller.get_encapsulated_packets_nb()
+            print(f"Number of packets encapsulated by routers: {routers_packets}")
         else:
             print("Usage: see <argument>")
             print("available arguments: topology, filters, load, tunnelled")
@@ -210,23 +216,27 @@ class Api(cmd.Cmd, MetaController):
                 if args[0] not in node['neighbors'].split():
                     print(f"Link between {args[0]} and {args[1]} does not exist")
                     return
-        
-        # Remove link from topology yaml file
-        with open(self.topology_file, 'w') as file:
-            yaml.dump(self.topology, file)
+     
+            # Remove link from topology yaml file
+            with open(self.topology_file, 'w') as file:
+                yaml.dump(self.topology, file,  default_flow_style=None)
+
+            # Make a copy of the file
+            topology_copy = copy.deepcopy(self.topology)
+            with open(self.topology_file.split('.')[0] + '_save.yaml', 'w') as file_save:
+                yaml.dump(topology_copy, file_save,  default_flow_style=None)
+
+            for node in topology_copy['nodes']:
+                if node['name'] == args[0]:
+                    node['neighbors'] = node['neighbors'].replace(args[1], '')
+                elif node['name'] == args[1]:
+                    node['neighbors'] = node['neighbors'].replace(args[0], '')
+
+            # Write the modified topology to the original file
+            with open(self.topology_file, 'w') as file:
+                yaml.dump(topology_copy, file,  default_flow_style=None)
+
             
-        for node in self.topology['nodes']:
-            if node['name'] == args[0]:
-                node['neighbors'] = node['neighbors'].replace(args[1], '')
-            elif node['name'] == args[1]:
-                node['neighbors'] = node['neighbors'].replace(args[0], '')
-                
-        with open(self.topology_file, 'w') as file:
-            yaml.dump(self.topology, file)
-            
-        # Update topology
-        self.meta_controller.update_topology()
-        
         # Remove link from the controller
         self.meta_controller.remove_link(args[0], args[1])
         
@@ -277,7 +287,6 @@ class Api(cmd.Cmd, MetaController):
         self.meta_controller.reset_all_tables()
         
         print(f"Added link between {args[0]} and {args[1]} and reset tables to recalculate shortest path")
-
 
 
     def do_quit(self, args):

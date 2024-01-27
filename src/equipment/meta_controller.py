@@ -16,6 +16,7 @@ class MetaController:
         self.file_2_json = 'topology_2.json'
         self.topology = load_topo(self.file_json)
         self.controllers = {}
+        self.equipment = {'firewall': [], 'load-balancer': [], 'router': [], 'router-lw': []}
         self.file_to_compile = file_to_compile
         self.compileWanted = compileWanted
         if file_to_compile != "" and file_to_compile is not None:
@@ -91,6 +92,7 @@ class MetaController:
                         _compile = False
                     fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = fw_node
+                    self.equipment['firewall'].append(fw_node)
                     if _compile == True:
                         self.compiledFiles.append('firewall')
 
@@ -103,6 +105,7 @@ class MetaController:
                         _compile = False
                     lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = lb_node
+                    self.equipment['load-balancer'].append(lb_node)
                     if _compile == True:
                         self.compiledFiles.append('load-balancer')
 
@@ -115,6 +118,7 @@ class MetaController:
                         _compile = False
                     router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = router_node
+                    self.equipment['router'].append(router_node)
                     if _compile == True:
                         self.compiledFiles.append('router')
                     
@@ -128,6 +132,7 @@ class MetaController:
                         _compile = False
                     lw_router_node = RouterLwController(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = lw_router_node
+                    self.equipment['router-lw'].append(lw_router_node)
                     if _compile == True:
                         self.compiledFiles.append('router-lw')
                    
@@ -296,12 +301,38 @@ class MetaController:
         elif equipment == "router":
             self.controllers[node_name] = RouterController(node_name, self.topology.get_neighbors(node_name), None, self.topology, False)
         elif equipment == "router-lw":
-            self.controllers[node_name] = RouterController(node_name, self.topology.get_neighbors(node_name), None, self.topology, False)
+            self.controllers[node_name] = RouterLwController(node_name, self.topology.get_neighbors(node_name), None, self.topology, False)
         else:
             print(f"Invalid type for node: {node_type}")
+            
             
     def reset_all_tables(self):
         """Reset all tables of all controllers"""
         for node_id, controller in self.controllers.items():
             print(f"Resetting tables of {node_id}...")
             controller.init_table()
+            controller.mininet_update()
+            
+            
+    def get_filtered_packets_nb(self):
+        """Get the number of packets filtered by firewalls"""
+        fws_packets = 0
+        for controller in self.equipment['firewall']:
+            fws_packets += controller.get_filtered_packets_nb()
+        return fws_packets
+    
+    def get_total_packets_nb(self):
+        """Get the number of packets received on every equipment"""
+        nodes_packets = []
+        for node_id, controller in self.controllers.items():
+            nodes_packets.append([node_id, controller.get_total_packets_nb()])
+        return nodes_packets
+    
+    def get_encapsulated_packets_nb(self):
+        """Get the number of packets encapsulated by routers"""
+        routers_packets = 0
+        for controller in self.equipment['router']:
+            routers_packets += controller.get_total_packets_nb()
+        return routers_packets
+        
+        
