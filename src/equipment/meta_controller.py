@@ -6,7 +6,7 @@ from p4utils.utils.helper import load_topo
 from src.equipment.firewall import Firewall
 from src.equipment.load_balancer import LoadBalancer
 from src.equipment.router import RouterController
-from src.equipment.router_lw import RouterLWController
+from src.equipment.router_lw import RouterLwController
 
 class MetaController:
     def __init__(self, user_input: str, file_to_compile: str, compileWanted: bool = True):
@@ -20,8 +20,10 @@ class MetaController:
         self.compileWanted = compileWanted
         if file_to_compile != "" and file_to_compile is not None:
             self.compileWanted = False
+        self.compiledFiles = []
         self.init_import_logi_topology()
         self.import_logi_topology()
+
 
     def update_topology(self):
         """Update topology with json file"""
@@ -81,41 +83,54 @@ class MetaController:
                 node_inflow = node_config.get('inflow')
 
                 if node_type == 'firewall':
-                    print(f'Firewall: on {node_name} node')
-                    if self.file_to_compile == 'firewall':
-                        self.compileWanted = True
-                    fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
+                    print(f'{node_name} node: firewall')
+                    _compile = self.compileWanted
+                    if self.file_to_compile == 'firewall' and 'firewall' not in self.compiledFiles:
+                        _compile = True
+                    if 'firewall' in self.compiledFiles:
+                        _compile = False
+                    fw_node = Firewall(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = fw_node
-                    if self.file_to_compile == 'firewall':
-                        self.compileWanted = False
+                    if _compile == True:
+                        self.compiledFiles.append('firewall')
 
                 elif node_type == 'load-balancer':
-                    print(f'Load-balance: on {node_name} node')
+                    print(f'{node_name} node: load-balancer')
+                    _compile = self.compileWanted
                     if self.file_to_compile == 'load-balancer':
-                        self.compileWanted = True
-                    lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
+                        _compile = True
+                    if 'load-balancer' not in self.compiledFiles:
+                        _compile = False
+                    lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = lb_node
-                    if self.file_to_compile == 'load-balancer':
-                        self.compileWanted = False
+                    if _compile == True:
+                        self.compiledFiles.append('load-balancer')
 
                 elif node_type == 'router':
-                    print(f'Router: on {node_name} node')
-                    if self.file_to_compile == 'router':
-                        self.compileWanted = True
-                    router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
+                    print(f'- {node_name} node: router')
+                    _compile = self.compileWanted
+                    if self.file_to_compile == 'router' and 'router' not in self.compiledFiles:
+                        _compile = True
+                    if 'router' in self.compiledFiles:
+                        _compile = False
+                    router_node = RouterController(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = router_node
-                    if self.file_to_compile == 'router':
-                        self.compileWanted = False
+                    if _compile == True:
+                        self.compiledFiles.append('router')
+                    
 
                 elif node_type == 'router-lw':
-                    print(f'Router: on {node_name} node')
-                    if self.file_to_compile == 'router-lw':
-                        self.compileWanted = True
-                    lw_router_node = RouterLWController(node_name, node_neighbors, node_inflow, self.topology, self.compileWanted)
+                    print(f'- {node_name} node: router-lw')
+                    _compile = self.compileWanted
+                    if self.file_to_compile == 'router-lw' and 'router-lw' not in self.compiledFiles:
+                        _compile = True
+                    if 'router-lw' in self.compiledFiles:
+                        _compile = False
+                    lw_router_node = RouterLwController(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = lw_router_node
-                    if self.file_to_compile == 'router-lw':
-                        self.compileWanted = False
-                    
+                    if _compile == True:
+                        self.compiledFiles.append('router-lw')
+                   
                 elif node_type == 'host':
                     pass
 
@@ -290,4 +305,3 @@ class MetaController:
         for node_id, controller in self.controllers.items():
             print(f"Resetting tables of {node_id}...")
             controller.init_table()
-        

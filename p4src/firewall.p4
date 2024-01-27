@@ -5,13 +5,7 @@
 
 #include "include/headers.p4"
 #include "include/parser.p4"
-
-/********** Checksum verification control **********/
-control FwVerifyChecksum(inout headers hdr, inout metadata meta) {
-    apply {  
-        
-    }
-}
+#include "include/checksum.p4"
 
 /** Ingress control **/
 control FwIngress(inout headers hdr,
@@ -24,6 +18,8 @@ control FwIngress(inout headers hdr,
 
     action drop() {
         mark_to_drop(standard_metadata);
+
+        // count
         filtered_packets.read(tmp, 0);
         filtered_packets.write(0, tmp + 1);
         total_packets.read(tmp, 0);
@@ -31,17 +27,18 @@ control FwIngress(inout headers hdr,
     }
 
     action set_nhop(egressSpec_t port) {
-        //set the output port that we also get from the table
+        // set the output port that we also get from the table
         standard_metadata.egress_spec = port;
 
-        //decrease ttl by 1
+        // decrease ttl by 1
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
 
-        // Count the packet
+        // count
         total_packets.read(tmp, 0);
         total_packets.write(0, tmp + 1);
     }
 
+    // drop the packet if it corresponds to a firewall rule
     table filter_table {
         key = {
             meta.srcAddr: exact;
@@ -58,6 +55,7 @@ control FwIngress(inout headers hdr,
         size = 1024; 
     }
 
+    // forward the packet in a first time
     table entry_port {
         key = {
             standard_metadata.ingress_port: exact;
@@ -71,6 +69,7 @@ control FwIngress(inout headers hdr,
     }
     apply {
         if (hdr.ipv4.isValid()) {
+            // store data of the packet in metadata
             meta.srcAddr = hdr.ipv4.srcAddr;
             meta.dstAddr = hdr.ipv4.dstAddr;
             meta.protocol = hdr.ipv4.protocol;
@@ -82,6 +81,7 @@ control FwIngress(inout headers hdr,
                 meta.dstPort = hdr.udp.dstPort;
             }
 
+            // apply tables
             switch(entry_port.apply().action_run) {
                 set_nhop: {
                     filter_table.apply();
@@ -100,19 +100,12 @@ control FwEgress(inout headers hdr,
     }
 }
 
-/********** Checksum computation control **********/
-control FwComputeChecksum(inout headers hdr, inout metadata meta) {
-    apply {
-
-    }
-}
-
 /********** Processing **********/
 V1Switch(
     AllParser(),
-    FwVerifyChecksum(),
+    AllVerifyChecksum(),
     FwIngress(),
     FwEgress(),
-    FwComputeChecksum(),
+    AllComputeChecksum(),
     AllDeparser()
 ) main;

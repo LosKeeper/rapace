@@ -5,18 +5,16 @@
 
 #include "include/headers.p4"
 #include "include/parser.p4"
-
-/********** Checksum verification control **********/
-control LbVerifyChecksum(inout headers hdr, inout metadata meta) {
-    apply {  
-
-    }
-}
+#include "include/checksum.p4"
 
 /********** Ingress control **********/
 control LbIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
+    
+    bit<32> tmp;
+    register<bit<32>>(1) total_packets;
+
     action drop() {
         mark_to_drop(standard_metadata);
     }
@@ -40,8 +38,13 @@ control LbIngress(inout headers hdr,
           meta.dstPort,
           meta.protocol},   
         num_nhops);
+
+        // count
+        total_packets.read(tmp, 0);
+        total_packets.write(0, tmp + 1);
     }
 
+    // forward the packet to the corresponding port according to the hash
     table load_balancer {
         key = {
             meta.hash: exact;
@@ -53,6 +56,8 @@ control LbIngress(inout headers hdr,
         size = 1024;
     }
 
+    // filter on the incoming port, if it is a port out, forward it
+    // otherwise, apply load_balancer table and generate a random number 
     table entry_port {
         key = {
             standard_metadata.ingress_port: exact;
@@ -97,34 +102,12 @@ control LbEgress(inout headers hdr,
     }
 }
 
-/********** Checksum computation control **********/
-control LbComputeChecksum(inout headers hdr, inout metadata meta) {
-    apply {
-        update_checksum(
-            hdr.ipv4.isValid(),
-                { hdr.ipv4.version,
-                hdr.ipv4.ihl,
-                hdr.ipv4.dscp,
-                hdr.ipv4.ecn,
-                hdr.ipv4.totalLen,
-                hdr.ipv4.identification,
-                hdr.ipv4.flags,
-                hdr.ipv4.fragOffset,
-                hdr.ipv4.ttl,
-                hdr.ipv4.protocol,
-                hdr.ipv4.srcAddr,
-                hdr.ipv4.dstAddr },
-                hdr.ipv4.hdrChecksum,
-                HashAlgorithm.csum16);
-    }
-}
-
 /********** Processing **********/
 V1Switch(
     AllParser(),
-    LbVerifyChecksum(),
+    AllVerifyChecksum(),
     LbIngress(),
     LbEgress(),
-    LbComputeChecksum(),
+    AllComputeChecksum(),
     AllDeparser()
 ) main;
