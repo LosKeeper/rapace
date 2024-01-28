@@ -314,6 +314,33 @@ class MetaController:
         else:
             print(f"Invalid type for node: {node_type}")
             
+    def change_weight(self, node1: str, node2: str, weight: int):
+        """Change the weight of the link between node1 and node2"""
+        with open(self.file_2_json, 'r') as json_file:
+            topology_data = json.load(json_file)
+            
+        # retrieve the link in the copy file
+        link = None
+        for link_data in topology_data.get('links', []):
+            if (link_data['node1'] == node1 and link_data['node2'] == node2) or \
+            (link_data['node1'] == node2 and link_data['node2'] == node1):
+                link = link_data
+                break
+
+        # check if the link exists
+        if link is None:
+            print(f"Link between {node1} and {node2} is not existing in the physical network")
+            return
+        
+        # change the weight
+        link['weight'] = int(weight)
+
+        # save the new link
+        with open(self.file_2_json, 'w') as json_file:
+            json.dump(topology_data, json_file, indent=2)
+            
+        # update the topology
+        self.update_topology() 
             
     def reset_all_tables(self):
         """Reset all tables of all controllers"""

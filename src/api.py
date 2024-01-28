@@ -192,11 +192,17 @@ class Api(cmd.Cmd, MetaController):
     def do_change_weight(self, args):
         # Check for arguments
         args = args.split()
-        if not args or (args[0] == "help") or len(args) != 2:
+        if not args or (args[0] == "help") or len(args) != 3:
             print("Usage: change_weight <link> <weight>")
             return
         
-        print("Changing weight...")
+        # change the weight of the link
+        self.meta_controller.change_weight(args[0], args[1], int(args[2]))
+        
+        # Reset all tables to recalculate shortest path
+        self.meta_controller.reset_all_tables()
+        
+        print(f"Changed weight of link {args[0]} to {args[1]} to {args[2]}")
 
     
     def do_remove_link(self, args):
