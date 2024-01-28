@@ -12,6 +12,7 @@ class LoadBalancer(Controller):
         self.flash('p4src/load-balancer.json')
         self.init_table()
     
+    
     def init_table(self):
         """Implement load balancer table initialization"""
         self.api.table_clear("entry_port")
@@ -28,6 +29,7 @@ class LoadBalancer(Controller):
             i += 1
             
         self.out_ports.append(self.in_port)
+    
     
     def set_rate_limit(self, rate: int):    
         """Set rate limit"""

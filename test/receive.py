@@ -8,7 +8,7 @@ def receive_udp_message(port):
             print(f"Listening for UDP messages on port {port}...")
 
             while True:
-                data, addr = sock.recvfrom(1024)  # Buffer size is 1024 bytes
+                data, addr = sock.recvfrom(1024)
                 print(f"Received message: {data.decode()} from {addr}")
     except Exception as e:
         print(f"Error: {e}")

@@ -20,7 +20,7 @@ class Api(cmd.Cmd, MetaController):
         
         
     def generate_graph(self, output_file="graph.png"):
-        # Load the topology yaml file
+        """Load the topology yaml file"""
         with open(self.topology_file, 'r') as file:
             topology_data = yaml.safe_load(file)
 
@@ -77,13 +77,14 @@ class Api(cmd.Cmd, MetaController):
         
         
     def load_topology(self):
+        """Load the topology yaml file"""
         with open(self.topology_file, 'r') as file:
             topology = yaml.safe_load(file)
         self.topology = topology
     
     
     def display_logical_links(self):
-        # Refresh the topology
+        """Refresh the topology"""
         self.load_topology()
         
         print("Logical Links:")
@@ -96,6 +97,7 @@ class Api(cmd.Cmd, MetaController):
                 
         
     def do_help(self, args):
+        """Help command"""
         print("Available commands:")
         # Get a list of all methods in the class
         methods = self.get_names()
@@ -108,7 +110,7 @@ class Api(cmd.Cmd, MetaController):
         
         
     def do_add_fw_rule(self, args):
-        # Split the argument string into a list of words
+        """Split the argument string into a list of words"""
         args = args.split()
 
         # Check if args is empty or if the first argument is "help"
@@ -122,7 +124,7 @@ class Api(cmd.Cmd, MetaController):
         
         
     def do_set_rate_lb(self, args):
-        # Split the argument string into a list of words
+        """Split the argument string into a list of words"""
         args = args.split()
 
         # Check if args is empty or if the first argument is "help"
@@ -134,7 +136,7 @@ class Api(cmd.Cmd, MetaController):
         
         
     def do_add_encap_node(self, args):
-        # Split the argument string into a list of words
+        """Split the argument string into a list of words"""
         args = args.split()
 
         # Check if args is empty or if the first argument is "help"
@@ -146,7 +148,7 @@ class Api(cmd.Cmd, MetaController):
 
 
     def do_swap(self, args):
-        # Split the argument string into a list of words
+        """Split the argument string into a list of words"""
         args = args.split()
 
         # Check if args is empty or if the first argument is "help"
@@ -164,6 +166,7 @@ class Api(cmd.Cmd, MetaController):
 
         
     def do_see(self, args):
+        """See commands"""
         args = args.split()  # Split the argument string into a list of words
         if not args or (args[0] == "help") or len(args) != 1:
             print("Usage: see <argument>")
@@ -190,7 +193,7 @@ class Api(cmd.Cmd, MetaController):
             
     
     def do_change_weight(self, args):
-        # Check for arguments
+        """Check for arguments"""
         args = args.split()
         if not args or (args[0] == "help") or len(args) != 3:
             print("Usage: change_weight <link> <weight>")
@@ -206,7 +209,7 @@ class Api(cmd.Cmd, MetaController):
 
     
     def do_remove_link(self, args):
-        # Check for arguments
+        """Check for arguments"""
         args = args.split()
         if not args or (args[0] == "help") or len(args) != 2:
             print("Usage: remove_link <node1> <node2>")
@@ -246,7 +249,7 @@ class Api(cmd.Cmd, MetaController):
 
     
     def do_add_link(self, args):
-        # Check for arguments
+        """Check for arguments"""
         args = args.split()
         if not args or (args[0] == "help") or len(args) != 2:
             print("Usage: add_link <node1> <node2>")
@@ -289,13 +292,16 @@ class Api(cmd.Cmd, MetaController):
 
 
     def do_quit(self, args):
+        """Quit command"""
         print("Quitting...")
         return True
     
     def do_exit(self, args):
+        """Exit command"""
         return self.do_quit(args)
     
 
     def do_EOF(self, args):
+        """EOF command"""
         return self.do_quit(args)
     

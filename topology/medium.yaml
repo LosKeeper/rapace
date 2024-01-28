@@ -1,25 +1,25 @@
 nodes:
-- inflow: null
-  name: s1
-  neighbors: h1 s2 s3
-  type: router
-- inflow: null
-  name: s2
-  neighbors: s1 s3 s4
-  type: router
-- inflow: null
-  name: s3
-  neighbors: s1 s2 s4
-  type: router
-- inflow: null
-  name: s4
-  neighbors: ' s2 s3 h2'
-  type: router
-- inflow: null
-  name: h1
-  neighbors: s1
-  type: host
-- inflow: null
-  name: h2
-  neighbors: ' s4'
-  type: host
+  - name: s1
+    type: router
+    neighbors: h1 s2 s3
+    inflow:
+  - name: s2
+    type: router
+    neighbors : s1 s3 s4
+    inflow:
+  - name: s3
+    type: router
+    neighbors: s1 s2 s4
+    inflow:
+  - name: s4
+    type: router
+    neighbors: h2 s2 s3
+    inflow:
+  - name: h1
+    type: host
+    neighbors: s1
+    inflow:
+  - name: h2
+    type: host
+    neighbors: s4
+    inflow:

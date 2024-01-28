@@ -11,6 +11,7 @@ class RouterController(Controller):
         self.flash('p4src/router.json')
         self.init_table()
     
+    
     def init_table(self):
         """Implement router controller table initialization"""
         self.api.table_clear("ipv4_lpm")
@@ -21,10 +22,8 @@ class RouterController(Controller):
                 all_paths = self.topology.get_all_paths_between_nodes(self.name, host_name)
             except Exception as e:
                 continue
-
             if not all_paths:
                 continue
-
             next_hop_name = self.topology.get_shortest_paths_between_nodes(self.name, host_name)[0][1]
             port_out = self.topology.node_to_node_port_num(self.name, next_hop_name)
             next_hop_mac = self.topology.node_to_node_mac(next_hop_name, self.name)
@@ -39,10 +38,8 @@ class RouterController(Controller):
                     all_paths = self.topology.get_all_paths_between_nodes(self.name, sw_name)
                 except Exception as e:
                     continue
-
                 if not all_paths:
                     continue
-
                 next_hop_name = self.topology.get_shortest_paths_between_nodes(self.name, sw_name)[0][1]
                 port_out = self.topology.node_to_node_port_num(self.name, next_hop_name)
                 next_hop_mac = self.topology.node_to_node_mac(next_hop_name, self.name)
@@ -61,6 +58,7 @@ class RouterController(Controller):
                     ip = self.topology.node_to_node_interface_ip(sw_name, node).split("/")[0]
                     port_number = self.topology.interface_to_port(sw_name, intf)
                     self.api.table_add("icmp_ingress_port", "set_src_icmp_ip", [str(port_number)], [str(ip)])          
+           
                 
     def get_total_packets_nb(self):
         """Retrieve the number of packets received on the controller"""

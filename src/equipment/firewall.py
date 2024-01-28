@@ -7,7 +7,6 @@ from src.equipment.controller import Controller
 class Firewall(Controller):
     def __init__(self, name: str, neighbors: List[str], inflow: str, topology: NetworkGraph, compileWanted: bool) -> None:
         super().__init__(name, neighbors, inflow, topology, compileWanted)
-        """Add specific attributes for firewall"""
         if len(neighbors) != 2:
             print("Firewall must have exactly 2 links")
             exit(1)
@@ -16,6 +15,7 @@ class Firewall(Controller):
         self.compile('p4src/firewall.p4')
         self.flash('p4src/firewall.json')
         self.init_table()
+
 
     def init_table(self):
         """Implement firewall table initialization"""
@@ -29,14 +29,14 @@ class Firewall(Controller):
         for rule in self.rules:
             self.add_rule(rule[0], rule[1], rule[2], rule[3], rule[4])
 
+
     def add_rule(self, srcAddr: str, dstAddr: str, protocol: str, srcPort: str, dstPort: str):
         """Implement method to add firewall rule"""
-        # Convert protocol to hex
         protocol_hex = "0x6" if protocol == "tcp" else "0x11"
         
-        # Add rule to firewall table
         self.api.table_add("filter_table", "drop", [srcAddr,dstAddr, protocol_hex, hex(int(srcPort)), hex(int(dstPort))])
         self.rules.append([srcAddr,dstAddr, protocol, srcPort, dstPort])
+        
         
     def get_total_packets_nb(self):
         """Retrieve the number of packets received on the firewall"""

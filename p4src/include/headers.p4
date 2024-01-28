@@ -4,9 +4,9 @@ const bit<16> TYPE_IPV4 = 0x800;
 const bit<16> TYPE_ICMP_1 = 0x1;
 const bit<8>  TYPE_TCP  = 6;
 const bit<8>  TYPE_UDP  = 17;
-const bit<8> TYPE_ICMP_2 = 0x1;
+const bit<8>  TYPE_ICMP_2 = 0x1;
 
-typedef bit<8> count_t;
+typedef bit<8>  count_t;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ipv4Addr_t;
@@ -61,8 +61,8 @@ header udp_t {
 }
 
 header icmp_t {
-   bit<8> type;
-   bit<8> code;
+   bit<8>  type;
+   bit<8>  code;
    bit<16> checksum;
    bit<32> unused;
 }
@@ -72,14 +72,14 @@ struct headers {
     ipv4_t ipv4_icmp;
     icmp_t icmp;
     ipv4_t ipv4;
-    tcp_t tcp;
-    udp_t udp;
+    tcp_t  tcp;
+    udp_t  udp;
 }
 
 struct metadata {
     ipv4Addr_t srcAddr;
     ipv4Addr_t dstAddr;
-    bit<8> protocol;
+    bit<8>  protocol;
     bit<16> srcPort;
     bit<16> dstPort;
     bit<16> hash;

@@ -26,11 +26,11 @@ class MetaController:
         self.import_logi_topology()
 
 
-    def update_topology(self):
+    def update_topologies(self):
         """Update topology with json file"""
         self.topology = load_topo(self.file_2_json)
         for node_id, controller in self.controllers.items():
-            controller.update_controller_topology(self.topology)
+            controller.update_topology(self.topology)
         
         
     def init_import_logi_topology(self):
@@ -69,7 +69,7 @@ class MetaController:
             if node not in nodes:
                 self.remove_node(node)
             
-        self.update_topology() 
+        self.update_topologies() 
         
 
     def import_logi_topology(self):
@@ -167,7 +167,6 @@ class MetaController:
         with open(self.file_json, 'r') as json_file:
             topology_save_data = json.load(json_file)
 
-        # retrieve the node in the copy file
         node_config = [node for node in topology_save_data.get('nodes', []) if node['id'] == name]
         
         if node_config == []:
@@ -179,7 +178,7 @@ class MetaController:
         with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
-        self.update_topology() 
+        self.update_topologies() 
 
     def remove_node(self, name):
         """Remove a node in the topology json file"""
@@ -196,7 +195,7 @@ class MetaController:
         with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
-        self.update_topology() 
+        self.update_topologies() 
             
             
     def add_link(self, node1: str, node2: str):
@@ -207,7 +206,6 @@ class MetaController:
         with open(self.file_json, 'r') as json_file:
             topology_save_data = json.load(json_file)
             
-        # retrieve the link in the copy file
         link = None
         for link_data in topology_save_data.get('links', []):
             if (link_data['node1'] == node1 and link_data['node2'] == node2) or \
@@ -221,7 +219,7 @@ class MetaController:
         with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
-        self.update_topology() 
+        self.update_topologies() 
             
     def remove_link(self, node1: str, node2: str):
         """Remove the link between node1 and node2 in the topology json file"""
@@ -240,7 +238,7 @@ class MetaController:
             with open(self.file_2_json, 'w') as json_file:
                 json.dump(topology_data, json_file, indent=2)    
                 
-        self.update_topology() 
+        self.update_topologies() 
           
                 
     def list_nodes(self):
@@ -261,6 +259,7 @@ class MetaController:
         for node_id, controller in self.controllers.items():
             print(f"{node_id}: {self.topology.get_neighbors(node_id)}")
 
+
     def get_firewall(self):
         """Get firewall controller."""
         for node_id, controller in self.controllers.items():
@@ -268,15 +267,14 @@ class MetaController:
                 return controller
         return None
     
+    
     def swap_node(self, node_name:str, equipment: str):
         """Swap a node by another one"""
         
-        # Check if this node is existing
         if node_name not in self.topology.get_p4switches():
             print(f"Node {node_name} is not existing in the physical network or it's an host")
             return
         
-        # Update the yaml file
         with open(self.file_yaml, 'r') as file:
             config_data = yaml.safe_load(file)
             
@@ -288,7 +286,6 @@ class MetaController:
         with open(self.file_yaml, 'w') as file:
             yaml.dump(config_data, file, indent=2)
             
-        # Update the json file
         with open(self.file_2_json, 'r') as json_file:
             topology_data = json.load(json_file)
             
@@ -299,10 +296,8 @@ class MetaController:
         with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
-        # Update the topology
-        self.update_topology()
+        self.update_topologies()
         
-        # Start new equipment
         if equipment == "firewall":
             self.controllers[node_name] = Firewall(node_name, self.topology.get_neighbors(node_name), None, self.topology, False)
         elif equipment == "load-balancer":
@@ -314,12 +309,12 @@ class MetaController:
         else:
             print(f"Invalid type for node: {node_type}")
             
+            
     def change_weight(self, node1: str, node2: str, weight: int):
         """Change the weight of the link between node1 and node2"""
         with open(self.file_2_json, 'r') as json_file:
             topology_data = json.load(json_file)
             
-        # retrieve the link in the copy file
         link = None
         for link_data in topology_data.get('links', []):
             if (link_data['node1'] == node1 and link_data['node2'] == node2) or \
@@ -327,21 +322,18 @@ class MetaController:
                 link = link_data
                 break
 
-        # check if the link exists
         if link is None:
             print(f"Link between {node1} and {node2} is not existing in the physical network")
             return
         
-        # change the weight
         link['weight'] = int(weight)
 
-        # save the new link
         with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
-        # update the topology
-        self.update_topology() 
-        
+        self.update_topologies() 
+
+
     def set_rate_limit(self, rate: int):
         """Set rate limit for all load balancers"""
         for controller in self.equipment['load-balancer']:
@@ -363,12 +355,14 @@ class MetaController:
             fws_packets += controller.get_filtered_packets_nb()
         return fws_packets
     
+    
     def get_total_packets_nb(self):
         """Get the number of packets received on every equipment"""
         nodes_packets = []
         for node_id, controller in self.controllers.items():
             nodes_packets.append([node_id, controller.get_total_packets_nb()])
         return nodes_packets
+    
     
     def get_encapsulated_packets_nb(self):
         """Get the number of packets encapsulated by routers"""
