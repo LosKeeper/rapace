@@ -4,7 +4,6 @@
 > Programmable networks project for M2 study at the University of Strasbourg.
 
 1. [Prerequisites](#prerequisites)
-2. [Sujet](#sujet)
 3. [Startup "physical" network](#startup-physical-network)
 4. [Startup "logical" network](#startup-logical-network)
 5. [WARNINGS](#warnings)
@@ -24,7 +23,6 @@ The project requires many python libraries. To install them, you can use the fol
 sudo pip install -r requirements.txt
 ```
 > You need to install it as root because all the python programs are launched with sudo.
-## [Sujet](sujet.pdf)
 
 ## Startup "physical" network
 To start the project, you first need to start the "physical" network with :
