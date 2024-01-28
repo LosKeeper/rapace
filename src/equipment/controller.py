@@ -33,14 +33,6 @@ class Controller:
         self.api.table_entries_match_to_handle = self.api.create_match_to_handle_dict()
         self.api.load_table_entries_match_to_handle()
         
-    def add_link(self, new_neigh, attribute):
-        # To be overridden
-        pass
-    
-    def can_remove_link(self, neighboor: str):
-        # To be overridden
-        pass
-    
-    def remove_link(self, neighboor: str):
-        # To be overridden
-        pass
+    def update_controller_topology(self, topology: NetworkGraph):
+        self.topology = topology
+        self.mininet_update()
