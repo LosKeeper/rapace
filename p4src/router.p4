@@ -87,7 +87,7 @@ control RIngress(inout headers hdr,
             // Forward packet
             ipv4_lpm.apply();
         }
-        else if (hdr.ipv4.isValid() && hdr.tcp.isValid() && hdr.ipv4.ttl == 1) {
+        else if (hdr.ipv4.isValid() && hdr.tcp.isValid() && hdr.ipv4.ttl <= 1) {
 
             // Set new headers valid
             hdr.ipv4_icmp.setValid();

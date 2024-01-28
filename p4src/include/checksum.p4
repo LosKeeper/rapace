@@ -50,7 +50,7 @@ control AllComputeChecksum(inout headers hdr, inout metadata meta) {
                 hdr.icmp.code,
                 hdr.icmp.unused,
                 hdr.ipv4.version,
-            hdr.ipv4.ihl,
+                hdr.ipv4.ihl,
                 hdr.ipv4.dscp,
                 hdr.ipv4.ecn,
                 hdr.ipv4.totalLen,
