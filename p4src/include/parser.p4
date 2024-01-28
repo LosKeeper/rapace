@@ -10,7 +10,7 @@ parser AllParser(packet_in packet,
   	    packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType){
             TYPE_IPV4: parse_ipv4;
-            1: parse_ipv4_icmp;
+            TYPE_ICMP: parse_ipv4_icmp;
             default: accept;
         }
     }
@@ -27,7 +27,7 @@ parser AllParser(packet_in packet,
     state parse_ipv4_icmp {
         packet.extract(hdr.ipv4_icmp);
         transition select(hdr.ipv4_icmp.protocol){
-            1: parse_icmp;
+            TYPE_ICMP: parse_icmp;
             default: accept;
         }
     }

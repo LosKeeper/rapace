@@ -84,43 +84,38 @@ control RIngress(inout headers hdr,
 
     apply {
         if(hdr.ipv4.isValid() && hdr.ipv4.ttl > 1){
-            // Forward packet
+            // forward packet
             ipv4_lpm.apply();
         }
         else if (hdr.ipv4.isValid() && hdr.tcp.isValid() && hdr.ipv4.ttl <= 1) {
 
-            // Set new headers valid
+            // set new headers valid
             hdr.ipv4_icmp.setValid();
             hdr.icmp.setValid();
 
-            // Set egress port == ingress port
+            // set egress port == ingress port
             standard_metadata.egress_spec = standard_metadata.ingress_port;
 
-            //Ethernet: Swap map addresses
+            // swap map addresses
             bit<48> tmp_mac = hdr.ethernet.srcAddr;
             hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
             hdr.ethernet.dstAddr = tmp_mac;
 
-            //Building new Ipv4 header for the ICMP packet
-            //Copy original header (for simplicity)
+            // building new Ipv4 header for the ICMP packet
             hdr.ipv4_icmp = hdr.ipv4;
-            //Set destination address as traceroute originator
+            // set destination address as traceroute originator
             hdr.ipv4_icmp.dstAddr = hdr.ipv4.srcAddr;
-            //Set src IP to the IP assigned to the switch interface
+            // set src IP to the IP assigned to the switch interface
             icmp_ingress_port.apply();
 
-            //Set protocol to ICMP
+            // complete the ICMP packet
             hdr.ipv4_icmp.protocol = IP_ICMP_PROTO;
-            //Set default TTL
             hdr.ipv4_icmp.ttl = 64;
-            //And IP Length to 56 bytes (normal IP header + ICMP + 8 bytes of data)
             hdr.ipv4_icmp.totalLen= 56;
-
-            //Create ICMP header with
             hdr.icmp.type = ICMP_TTL_EXPIRED;
             hdr.icmp.code = 0;
 
-            //make sure all the packets are length 70.. so wireshark does not complain when tpc options,etc
+            // make sure all the packets are length 70
             truncate((bit<32>)70);
         }
     }

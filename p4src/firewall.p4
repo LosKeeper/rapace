@@ -30,9 +30,6 @@ control FwIngress(inout headers hdr,
         // set the output port that we also get from the table
         standard_metadata.egress_spec = port;
 
-        // decrease ttl by 1
-        hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
-
         // count
         total_packets.read(tmp, 0);
         total_packets.write(0, tmp + 1);
