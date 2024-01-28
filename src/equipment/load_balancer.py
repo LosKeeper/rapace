@@ -11,7 +11,6 @@ class LoadBalancer(Controller):
         self.compile('p4src/load-balancer.p4')
         self.flash('p4src/load-balancer.json')
         self.init_table()
-        self.set_rate_limit(1)  # Default rate limit, can be adjusted
     
     def init_table(self):
         """Implement load balancer table initialization"""
