@@ -29,6 +29,8 @@ class MetaController:
     def update_topology(self):
         """Update topology with json file"""
         self.topology = load_topo(self.file_2_json)
+        for node_id, controller in self.controllers.items():
+            controller.update_controller_topology(self.topology)
         
         
     def init_import_logi_topology(self):
@@ -122,7 +124,6 @@ class MetaController:
                     if _compile == True:
                         self.compiledFiles.append('router')
                     
-
                 elif node_type == 'router-lw':
                     print(f'- {node_name} node: router-lw')
                     _compile = self.compileWanted
@@ -177,6 +178,8 @@ class MetaController:
 
         with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
+            
+        self.update_topology() 
 
     def remove_node(self, name):
         """Remove a node in the topology json file"""
@@ -192,6 +195,8 @@ class MetaController:
 
         with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
+            
+        self.update_topology() 
             
             
     def add_link(self, node1: str, node2: str):
@@ -216,6 +221,8 @@ class MetaController:
         with open(self.file_2_json, 'w') as json_file:
             json.dump(topology_data, json_file, indent=2)
             
+        self.update_topology() 
+            
     def remove_link(self, node1: str, node2: str):
         """Remove the link between node1 and node2 in the topology json file"""
         with open(self.file_2_json, 'r') as json_file:
@@ -231,8 +238,10 @@ class MetaController:
         if link_index is not None:  
             removed_link = topology_data['links'].pop(link_index)
             with open(self.file_2_json, 'w') as json_file:
-                json.dump(topology_data, json_file, indent=2)
+                json.dump(topology_data, json_file, indent=2)    
                 
+        self.update_topology() 
+          
                 
     def list_nodes(self):
         """List all nodes running in the network."""

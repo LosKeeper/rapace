@@ -16,6 +16,14 @@ class RouterController(Controller):
         self.api.table_clear("ipv4_lpm")
         
         for host_name, host_config in self.topology.get_hosts().items():
+            try:
+                all_paths = self.topology.get_all_paths_between_nodes(self.name, host_name)
+            except Exception as e:
+                continue
+
+            if not all_paths:
+                continue
+
             next_hop_name = self.topology.get_shortest_paths_between_nodes(self.name, host_name)[0][1]
             port_out = self.topology.node_to_node_port_num(self.name, next_hop_name)
             next_hop_mac = self.topology.node_to_node_mac(next_hop_name, self.name)
@@ -26,10 +34,18 @@ class RouterController(Controller):
         
         for sw_name, sw_config in self.topology.get_p4switches().items():
             if sw_name != self.name:
+                try:
+                    all_paths = self.topology.get_all_paths_between_nodes(self.name, sw_name)
+                except Exception as e:
+                    continue
+
+                if not all_paths:
+                    continue
+
                 next_hop_name = self.topology.get_shortest_paths_between_nodes(self.name, sw_name)[0][1]
                 port_out = self.topology.node_to_node_port_num(self.name, next_hop_name)
                 next_hop_mac = self.topology.node_to_node_mac(next_hop_name, self.name)
-                self.api.table_add("ipv4_lpm", "set_nhop_router", [str(sw_config["loopback"]) + "/32"], [str(next_hop_mac), str(port_out)])
+                self.api.table_add("ipv4_lpm", "set_nhop_router", [str(sw_config["loopback"]) + "/32"], [str(next_hop_mac), str(port_out)])          
                 
     def get_total_packets_nb(self):
         """Retrieve the number of packets received on the controller"""

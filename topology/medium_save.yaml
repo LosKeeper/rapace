@@ -1,0 +1,25 @@
+nodes:
+  - name: s1
+    type: router
+    neighbors: h1 s2 s3
+    inflow:
+  - name: s2
+    type: router
+    neighbors : s1 s3 s4
+    inflow:
+  - name: s3
+    type: router
+    neighbors: s1 s2 s4
+    inflow:
+  - name: s4
+    type: router
+    neighbors: h2 s2 s3
+    inflow:
+  - name: h1
+    type: host
+    neighbors: s1
+    inflow:
+  - name: h2
+    type: host
+    neighbors: s4
+    inflow:

@@ -217,26 +217,19 @@ class Api(cmd.Cmd, MetaController):
                     print(f"Link between {args[0]} and {args[1]} does not exist")
                     return
      
-            # Remove link from topology yaml file
-            with open(self.topology_file, 'w') as file:
-                yaml.dump(self.topology, file,  default_flow_style=None)
-
-            # Make a copy of the file
-            topology_copy = copy.deepcopy(self.topology)
-            with open(self.topology_file.split('.')[0] + '_save.yaml', 'w') as file_save:
-                yaml.dump(topology_copy, file_save,  default_flow_style=None)
-
-            for node in topology_copy['nodes']:
-                if node['name'] == args[0]:
-                    node['neighbors'] = node['neighbors'].replace(args[1], '')
-                elif node['name'] == args[1]:
-                    node['neighbors'] = node['neighbors'].replace(args[0], '')
-
-            # Write the modified topology to the original file
-            with open(self.topology_file, 'w') as file:
-                yaml.dump(topology_copy, file,  default_flow_style=None)
-
+        # Remove link from topology yaml file
+        with open(self.topology_file, 'w') as file:
+            yaml.dump(self.topology, file)
             
+        for node in self.topology['nodes']:
+            if node['name'] == args[0]:
+                node['neighbors'] = node['neighbors'].replace(args[1], '')
+            elif node['name'] == args[1]:
+                node['neighbors'] = node['neighbors'].replace(args[0], '')
+                
+        with open(self.topology_file, 'w') as file:
+            yaml.dump(self.topology, file)
+
         # Remove link from the controller
         self.meta_controller.remove_link(args[0], args[1])
         

@@ -1,0 +1,17 @@
+nodes:
+- name: s1
+  type: router
+  neighbors: h1 s2
+  inflow: 
+- name: s2
+  type: router
+  neighbors: s1 h2
+  inflow: 
+- name: h1
+  type: host
+  neighbors: s1
+  inflow:
+- name: h2
+  type: host
+  neighbors: s2
+  inflow: 
