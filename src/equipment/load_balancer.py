@@ -8,7 +8,6 @@ class LoadBalancer(Controller):
         super().__init__(name, neighbors, inflow, topology, compileWanted)
         self.in_port = inflow
         self.out_ports = neighbors 
-        self.rate_limit = 1  # Default rate limit, can be adjusted
         self.compile('p4src/load-balancer.p4')
         self.flash('p4src/load-balancer.json')
         self.init_table()
@@ -31,8 +30,8 @@ class LoadBalancer(Controller):
         self.out_ports.append(self.in_port)
     
     def set_rate_limit(self, rate: int):    
-        """Implement method to set rate limit"""
-        self.rate_limit = rate
+        """Set rate limit"""
+        self.api.set_queue_rate(int(rate))
     
     def get_total_packets_nb(self):
         """Retrieve the number of packets received on the controller"""

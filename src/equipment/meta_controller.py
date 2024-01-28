@@ -88,7 +88,7 @@ class MetaController:
                 if node_type == 'firewall':
                     print(f'{node_name} node: firewall')
                     _compile = self.compileWanted
-                    if self.file_to_compile == 'firewall' and 'firewall' not in self.compiledFiles:
+                    if self.file_to_compile == 'firewall':
                         _compile = True
                     if 'firewall' in self.compiledFiles:
                         _compile = False
@@ -103,7 +103,7 @@ class MetaController:
                     _compile = self.compileWanted
                     if self.file_to_compile == 'load-balancer':
                         _compile = True
-                    if 'load-balancer' not in self.compiledFiles:
+                    if 'load-balancer' in self.compiledFiles:
                         _compile = False
                     lb_node = LoadBalancer(node_name, node_neighbors, node_inflow, self.topology, _compile)
                     self.controllers[node_name] = lb_node
@@ -341,6 +341,12 @@ class MetaController:
             
         # update the topology
         self.update_topology() 
+        
+    def set_rate_limit(self, rate: int):
+        """Set rate limit for all load balancers"""
+        for controller in self.equipment['load-balancer']:
+            controller.set_rate_limit(rate)
+            
             
     def reset_all_tables(self):
         """Reset all tables of all controllers"""

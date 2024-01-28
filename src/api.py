@@ -130,7 +130,7 @@ class Api(cmd.Cmd, MetaController):
             print("Usage: set_rate_lb <pkts/s>")
             return
 
-        print("Setting rate...")
+        self.meta_controller.set_rate_limit(args[0])
         
         
     def do_add_encap_node(self, args):
