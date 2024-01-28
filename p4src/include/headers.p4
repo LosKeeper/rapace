@@ -1,6 +1,7 @@
 /*** headers.p4 ***/
 
 const bit<16> TYPE_IPV4 = 0x800;
+const bit<16> TYPE_ICMP = 0x1;
 const bit<8>  TYPE_TCP  = 6;
 const bit<8>  TYPE_UDP  = 17;
 
@@ -58,8 +59,17 @@ header udp_t {
     bit<16> checksum;
 }
 
+header icmp_t {
+   bit<8> type;
+   bit<8> code;
+   bit<16> checksum;
+   bit<32> unused;
+}
+
 struct headers {
     ethernet_t ethernet;
+    ipv4_t ipv4_icmp;
+    icmp_t icmp;
     ipv4_t ipv4;
     tcp_t tcp;
     udp_t udp;

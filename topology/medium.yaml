@@ -13,7 +13,7 @@ nodes:
   type: router
 - inflow: null
   name: s4
-  neighbors: ' s2 s3'
+  neighbors: ' s2 s3 h2'
   type: router
 - inflow: null
   name: h1
@@ -21,5 +21,5 @@ nodes:
   type: host
 - inflow: null
   name: h2
-  neighbors: ''
+  neighbors: ' s4'
   type: host

@@ -10,6 +10,7 @@ parser AllParser(packet_in packet,
   	    packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType){
             TYPE_IPV4: parse_ipv4;
+            TYPE_ICMP: parse_ipv4_icmp;
             default: accept;
         }
     }
@@ -23,6 +24,14 @@ parser AllParser(packet_in packet,
         }
     }
 
+    state parse_ipv4_icmp {
+        packet.extract(hdr.ipv4_icmp);
+        transition select(hdr.ipv4_icmp.protocol){
+            TYPE_ICMP: parse_icmp;
+            default: accept;
+        }
+    }
+
     state parse_tcp {
         packet.extract(hdr.tcp);
         transition accept;
@@ -32,12 +41,20 @@ parser AllParser(packet_in packet,
         packet.extract(hdr.udp);
         transition accept;
     }
+    
+    state parse_icmp {
+        packet.extract(hdr.icmp);
+        transition accept;
+    }
+
 }
 
 /********** Deparser **********/
 control AllDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
+        packet.emit(hdr.ipv4_icmp);
+        packet.emit(hdr.icmp);
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
         packet.emit(hdr.udp);

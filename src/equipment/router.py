@@ -14,6 +14,7 @@ class RouterController(Controller):
     def init_table(self):
         """Implement router controller table initialization"""
         self.api.table_clear("ipv4_lpm")
+        self.api.table_clear("icmp_ingress_port")
         
         for host_name, host_config in self.topology.get_hosts().items():
             try:
@@ -45,7 +46,21 @@ class RouterController(Controller):
                 next_hop_name = self.topology.get_shortest_paths_between_nodes(self.name, sw_name)[0][1]
                 port_out = self.topology.node_to_node_port_num(self.name, next_hop_name)
                 next_hop_mac = self.topology.node_to_node_mac(next_hop_name, self.name)
-                self.api.table_add("ipv4_lpm", "set_nhop_router", [str(sw_config["loopback"]) + "/32"], [str(next_hop_mac), str(port_out)])          
+                self.api.table_add("ipv4_lpm", "set_nhop_router", [str(sw_config["loopback"]) + "/32"], [str(next_hop_mac), str(port_out)])
+                
+        for sw_name, controller in self.topology.get_p4switches().items():
+            for intf, node in self.topology.get_interfaces_to_node(sw_name).items():
+                if self.topology.node_to_node_interface_ip(sw_name, node) != None:
+                    ip = self.topology.node_to_node_interface_ip(sw_name, node).split("/")[0]
+                    port_number = self.topology.interface_to_port(sw_name, intf)
+                    self.api.table_add("icmp_ingress_port", "set_src_icmp_ip", [str(port_number)], [str(ip)])
+                
+        for sw_name, controller in self.topology.get_hosts().items():
+            for intf, node in self.topology.get_interfaces_to_node(sw_name).items():
+                if self.topology.node_to_node_interface_ip(sw_name, node) != None:    
+                    ip = self.topology.node_to_node_interface_ip(sw_name, node).split("/")[0]
+                    port_number = self.topology.interface_to_port(sw_name, intf)
+                    self.api.table_add("icmp_ingress_port", "set_src_icmp_ip", [str(port_number)], [str(ip)])          
                 
     def get_total_packets_nb(self):
         """Retrieve the number of packets received on the controller"""
