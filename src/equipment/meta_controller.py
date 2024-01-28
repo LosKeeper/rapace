@@ -341,6 +341,12 @@ class MetaController:
             
         # update the topology
         self.update_topology() 
+        
+    def set_rate_limit(self, rate: int):
+        """Set rate limit for all load balancers"""
+        for controller in self.equipment['load-balancer']:
+            controller.set_rate_limit(rate)
+            
             
     def reset_all_tables(self):
         """Reset all tables of all controllers"""

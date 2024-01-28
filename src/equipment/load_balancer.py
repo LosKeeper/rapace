@@ -32,8 +32,7 @@ class LoadBalancer(Controller):
     
     def set_rate_limit(self, rate: int):    
         """Set rate limit"""
-        for port in self.out_ports:
-            self.api.set_queue_rate(str(rate), str(port))
+        self.api.set_queue_rate(int(rate))
     
     def get_total_packets_nb(self):
         """Retrieve the number of packets received on the controller"""

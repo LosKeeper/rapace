@@ -1,9 +1,10 @@
 /*** headers.p4 ***/
 
 const bit<16> TYPE_IPV4 = 0x800;
-const bit<16> TYPE_ICMP = 0x1;
+const bit<16> TYPE_ICMP_1 = 0x1;
 const bit<8>  TYPE_TCP  = 6;
 const bit<8>  TYPE_UDP  = 17;
+const bit<8> TYPE_ICMP_2 = 0x1;
 
 typedef bit<8> count_t;
 typedef bit<9>  egressSpec_t;
